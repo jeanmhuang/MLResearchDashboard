@@ -3,73 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Research Dashboard</title>
+    <title>ML Research Dashboard - Enhanced</title>
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📑</text></svg>">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://github.com/jeanmhuang/MLResearchDashboard">
-    <meta property="og:title" content="ML Research Dashboard">
-    <meta property="og:description" content="Stay current with cutting-edge machine learning research. Browse papers by topic, track citations, and discover trending research areas.">
+    <meta property="og:title" content="ML Research Dashboard - Enhanced">
+    <meta property="og:description" content="AI-powered research discovery with smart summaries, personalized feeds, and impact metrics that matter.">
     <meta property="og:image" content="https://raw.githubusercontent.com/jeanmhuang/MLResearchDashboard/main/thumbnail.png">
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://github.com/jeanmhuang/MLResearchDashboard">
-    <meta property="twitter:title" content="ML Research Dashboard">
-    <meta property="twitter:description" content="Stay current with cutting-edge machine learning research. Browse papers by topic, track citations, and discover trending research areas.">
-    <meta property="twitter:image" content="https://raw.githubusercontent.com/jeanmhuang/MLResearchDashboard/main/thumbnail.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .paper-card {
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
         .paper-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
         }
-        .topic-pill {
-            transition: all 0.2s ease;
-        }
-        .topic-pill:hover {
-            transform: scale(1.05);
+        .ai-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .metric-badge {
-            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+        .metric-badge:hover {
+            transform: scale(1.1);
+        }
+        .lineage-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+        }
+        .reading-list-item {
+            transition: all 0.2s;
+        }
+        .reading-list-item:hover {
+            background: #f3f4f6;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+        }
+        .new-badge {
+            animation: pulse-glow 2s infinite;
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+        <aside class="w-72 bg-white border-r border-gray-200 overflow-y-auto">
             <div class="p-6">
                 <h1 class="text-2xl font-bold text-gray-900 mb-1">ML Research</h1>
-                <p class="text-sm text-gray-500 mb-6">Dashboard</p>
+                <p class="text-sm text-gray-500 mb-6">AI-Powered Discovery</p>
                 
-                <!-- Search -->
-                <div class="mb-6">
-                    <input type="text" placeholder="Search papers..." 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- User Profile -->
+                <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                            JH
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">Jean Huang</div>
+                            <div class="text-xs text-gray-600">Personalized Feed Active</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-600">
+                        <span class="font-medium">Following:</span> 12 topics · 8 researchers
+                    </div>
                 </div>
 
-                <!-- Quick Stats -->
-                <div class="mb-6 p-3 bg-blue-50 rounded-lg">
-                    <div class="text-xs text-gray-600 mb-1">Papers Today</div>
-                    <div class="text-2xl font-bold text-blue-600">47</div>
+                <!-- Quick Actions -->
+                <div class="mb-6">
+                    <button class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors mb-2">
+                        ✨ For You
+                    </button>
+                    <button class="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        📚 My Reading List (5)
+                    </button>
+                </div>
+
+                <!-- Following -->
+                <div class="mb-6">
+                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Following</h2>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between px-3 py-2 bg-purple-50 border border-purple-100 rounded-lg">
+                            <span class="text-sm font-medium text-gray-900">🔥 Diffusion Models</span>
+                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium">3 new</span>
+                        </div>
+                        <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <span class="text-sm text-gray-700">Yann LeCun</span>
+                            <span class="text-xs text-gray-500">1 new</span>
+                        </div>
+                        <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <span class="text-sm text-gray-700">Stanford AI Lab</span>
+                            <span class="text-xs text-gray-500">2 new</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Topics -->
                 <div class="mb-6">
-                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Research Areas</h2>
+                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Browse Topics</h2>
                     <nav class="space-y-1">
-                        <a href="#" class="flex items-center justify-between px-3 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium">
-                            <span>All Papers</span>
-                            <span class="text-xs bg-blue-200 px-2 py-0.5 rounded-full">247</span>
-                        </a>
                         <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
                             <span>Computer Vision</span>
                             <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">42</span>
@@ -86,44 +126,32 @@
                             <span>Generative Models</span>
                             <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">51</span>
                         </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>ML Theory</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">18</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>Robotics</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">15</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>AI Safety</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">12</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>Multimodal AI</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">18</span>
-                        </a>
                     </nav>
                 </div>
 
-                <!-- Filters -->
+                <!-- Smart Filters -->
                 <div>
-                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Filters</h2>
+                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Smart Filters</h2>
                     <div class="space-y-2">
-                        <label class="flex items-center text-sm">
-                            <input type="checkbox" class="mr-2 rounded" checked>
-                            <span>ArXiv</span>
+                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                            <input type="checkbox" class="mr-2 rounded text-blue-600">
+                            <span>⚡ High Impact (50+ real usage)</span>
                         </label>
-                        <label class="flex items-center text-sm">
-                            <input type="checkbox" class="mr-2 rounded" checked>
-                            <span>Conference Papers</span>
+                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                            <input type="checkbox" class="mr-2 rounded text-blue-600" checked>
+                            <span>💻 Has Working Code</span>
                         </label>
-                        <label class="flex items-center text-sm">
-                            <input type="checkbox" class="mr-2 rounded">
-                            <span>High Citations (50+)</span>
+                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                            <input type="checkbox" class="mr-2 rounded text-blue-600">
+                            <span>✅ Reproducible Results</span>
                         </label>
-                        <label class="flex items-center text-sm">
-                            <input type="checkbox" class="mr-2 rounded">
-                            <span>With Code</span>
+                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                            <input type="checkbox" class="mr-2 rounded text-blue-600">
+                            <span>🏢 Industry-Relevant</span>
+                        </label>
+                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
+                            <input type="checkbox" class="mr-2 rounded text-blue-600">
+                            <span>🎓 Beginner-Friendly</span>
                         </label>
                     </div>
                 </div>
@@ -137,90 +165,135 @@
                 <div class="px-8 py-4">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-900">Latest Research</h2>
-                            <p class="text-sm text-gray-600 mt-1">Updated daily from ArXiv, conferences, and journals</p>
+                            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                ✨ For You
+                                <span class="text-sm font-normal text-gray-500">· Personalized based on your interests</span>
+                            </h2>
+                            <p class="text-sm text-gray-600 mt-1">AI-curated papers you should read this week</p>
                         </div>
                         <div class="flex gap-2">
                             <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>This Week</option>
                                 <option>Last 7 Days</option>
                                 <option>Last 30 Days</option>
-                                <option>Last 3 Months</option>
-                                <option>All Time</option>
-                            </select>
-                            <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option>Sort by Date</option>
-                                <option>Sort by Citations</option>
-                                <option>Sort by Relevance</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Trending Topics -->
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="text-xs text-gray-600 font-medium">Trending:</span>
-                        <button class="topic-pill text-xs px-3 py-1 bg-red-100 text-red-700 rounded-full font-medium">🔥 Diffusion Models</button>
-                        <button class="topic-pill text-xs px-3 py-1 bg-orange-100 text-orange-700 rounded-full font-medium">🔥 Vision Transformers</button>
-                        <button class="topic-pill text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">⚡ In-Context Learning</button>
-                        <button class="topic-pill text-xs px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">✨ Mixture of Experts</button>
+                    <!-- Search -->
+                    <div class="relative">
+                        <input type="text" placeholder="Search papers, researchers, or concepts..." 
+                               class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                     </div>
                 </div>
             </header>
 
             <!-- Papers Grid -->
             <div class="p-8">
-                <div class="space-y-4">
+                <div class="space-y-6">
                     
-                    <!-- Paper Card 1 -->
-                    <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-                                    Scaling Laws for Neural Language Models with Sparse Attention Mechanisms
-                                </h3>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-sm text-gray-600">Smith, J. et al.</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">NeurIPS 2024</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Oct 25, 2025</span>
-                                </div>
-                            </div>
-                            <button class="text-gray-400 hover:text-yellow-500 ml-4">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    <!-- Featured Paper with AI Summary -->
+                    <div class="paper-card bg-white rounded-xl border-2 border-blue-200 shadow-lg overflow-hidden">
+                        <div class="ai-summary p-4 text-white">
+                            <div class="flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                 </svg>
-                            </button>
+                                <span class="font-bold text-sm">TOP PICK FOR YOU · AI SUMMARY</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">Scaling Laws for Neural Language Models</h3>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-sm">
+                                <div class="font-semibold mb-1">🎯 Why This Matters:</div>
+                                <p class="mb-2">This paper reveals that model performance predictably improves with scale, helping you decide when to train bigger models vs. optimize existing ones.</p>
+                                <div class="font-semibold mb-1">💡 Key Insight:</div>
+                                <p>Performance follows power laws with model size, dataset size, and compute - you can predict results before expensive training.</p>
+                            </div>
                         </div>
                         
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                            We investigate the scaling behavior of transformer models with sparse attention patterns, demonstrating that logarithmic attention complexity can maintain performance while significantly reducing computational costs. Our experiments across models ranging from 125M to 175B parameters reveal novel scaling laws...
-                        </p>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex gap-2 flex-wrap">
-                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Transformers</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Scaling Laws</span>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-sm text-gray-600">Kaplan, J. et al.</span>
+                                <span class="text-gray-300">•</span>
+                                <span class="text-sm text-gray-600">OpenAI</span>
+                                <span class="text-gray-300">•</span>
+                                <span class="text-sm text-gray-600">Oct 27, 2025</span>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full ml-2">🏢 Used in Production</span>
                             </div>
-                            <div class="flex items-center gap-4 text-sm text-gray-600">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+
+                            <!-- Research Lineage -->
+                            <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <div class="text-xs font-semibold text-blue-900 mb-2 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                                     </svg>
-                                    127 citations
-                                </span>
-                                <a href="#" class="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Code
-                                </a>
+                                    RESEARCH LINEAGE
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="text-gray-700">Builds on:</span>
+                                    <a href="#" class="text-blue-600 hover:underline">GPT-3 (2020)</a>
+                                    <span class="text-gray-400">→</span>
+                                    <a href="#" class="text-blue-600 hover:underline">Chinchilla (2022)</a>
+                                    <span class="text-gray-400">→</span>
+                                    <span class="font-medium text-gray-900">This paper</span>
+                                </div>
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-4">
+                                We study empirical scaling laws for language model performance on the cross-entropy loss. The loss scales as a power-law with model size, dataset size, and compute, with some trends spanning more than seven orders of magnitude...
+                            </p>
+
+                            <!-- Enhanced Metrics -->
+                            <div class="grid grid-cols-5 gap-3 mb-4">
+                                <div class="metric-badge text-center p-2 bg-gray-50 rounded-lg cursor-pointer" title="Academic citations">
+                                    <div class="text-lg font-bold text-gray-900">847</div>
+                                    <div class="text-xs text-gray-600">Citations</div>
+                                </div>
+                                <div class="metric-badge text-center p-2 bg-purple-50 rounded-lg cursor-pointer" title="GitHub implementations">
+                                    <div class="text-lg font-bold text-purple-700">234</div>
+                                    <div class="text-xs text-purple-600">⭐ GitHub</div>
+                                </div>
+                                <div class="metric-badge text-center p-2 bg-blue-50 rounded-lg cursor-pointer" title="Blog posts & articles">
+                                    <div class="text-lg font-bold text-blue-700">89</div>
+                                    <div class="text-xs text-blue-600">📝 Blogs</div>
+                                </div>
+                                <div class="metric-badge text-center p-2 bg-orange-50 rounded-lg cursor-pointer" title="Discussion activity">
+                                    <div class="text-lg font-bold text-orange-700">156</div>
+                                    <div class="text-xs text-orange-600">💬 Discuss</div>
+                                </div>
+                                <div class="metric-badge text-center p-2 bg-green-50 rounded-lg cursor-pointer" title="Companies using this">
+                                    <div class="text-lg font-bold text-green-700">12</div>
+                                    <div class="text-xs text-green-600">🏢 In Use</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">NLP</span>
+                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">LLMs</span>
+                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Scaling Laws</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <a href="#" class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Code
+                                    </a>
+                                    <button class="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 font-medium">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                        </svg>
+                                        Save
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Paper Card 2 -->
+                    <!-- Regular Paper with Key Insights -->
                     <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -228,157 +301,263 @@
                                     <h3 class="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
                                         DreamFusion: Text-to-3D using 2D Diffusion
                                     </h3>
-                                    <span class="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-medium">TRENDING</span>
+                                    <span class="new-badge text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium border border-blue-200">NEW</span>
                                 </div>
-                                <div class="flex items-center gap-2 mb-2">
+                                <div class="flex items-center gap-2 mb-3">
                                     <span class="text-sm text-gray-600">Poole, B. et al.</span>
                                     <span class="text-gray-300">•</span>
                                     <span class="text-sm text-gray-600">Google Research</span>
                                     <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Oct 27, 2025</span>
+                                    <span class="text-sm text-gray-600">Oct 28, 2025</span>
                                 </div>
                             </div>
-                            <button class="text-gray-400 hover:text-yellow-500 ml-4">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                                </svg>
-                            </button>
                         </div>
-                        
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                            We combine neural rendering with pre-trained 2D diffusion models to synthesize 3D objects from text descriptions. Our approach leverages Score Distillation Sampling to enable optimization-based 3D synthesis without any 3D training data, achieving photorealistic results...
+
+                        <!-- AI Key Insights -->
+                        <div class="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
+                            <div class="text-xs font-semibold text-purple-900 mb-2">🤖 AI KEY INSIGHTS</div>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• <strong>Novel approach:</strong> Uses 2D diffusion models to create 3D without 3D training data</li>
+                                <li>• <strong>Why it works:</strong> Score Distillation Sampling bridges 2D and 3D spaces</li>
+                                <li>• <strong>Impact:</strong> Makes 3D generation accessible without expensive 3D datasets</li>
+                            </ul>
+                        </div>
+
+                        <!-- Research Context -->
+                        <div class="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                            <div class="text-xs font-semibold text-amber-900 mb-1 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                READ FIRST: 
+                                <a href="#" class="text-amber-700 hover:underline">Stable Diffusion</a>
+                                <span class="text-amber-600">·</span>
+                                <a href="#" class="text-amber-700 hover:underline">NeRF Basics</a>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-gray-600 mb-4">
+                            We combine neural rendering with pre-trained 2D diffusion models to synthesize 3D objects from text descriptions. Our approach leverages Score Distillation Sampling to enable optimization-based 3D synthesis...
                         </p>
-                        
+
+                        <!-- Enhanced Metrics -->
+                        <div class="grid grid-cols-5 gap-3 mb-4">
+                            <div class="metric-badge text-center p-2 bg-gray-50 rounded-lg">
+                                <div class="text-lg font-bold text-gray-900">12</div>
+                                <div class="text-xs text-gray-600">Citations</div>
+                            </div>
+                            <div class="metric-badge text-center p-2 bg-purple-50 rounded-lg">
+                                <div class="text-lg font-bold text-purple-700">1.2k</div>
+                                <div class="text-xs text-purple-600">⭐ GitHub</div>
+                            </div>
+                            <div class="metric-badge text-center p-2 bg-blue-50 rounded-lg">
+                                <div class="text-lg font-bold text-blue-700">45</div>
+                                <div class="text-xs text-blue-600">📝 Blogs</div>
+                            </div>
+                            <div class="metric-badge text-center p-2 bg-orange-50 rounded-lg">
+                                <div class="text-lg font-bold text-orange-700">289</div>
+                                <div class="text-xs text-orange-600">💬 Discuss</div>
+                            </div>
+                            <div class="metric-badge text-center p-2 bg-green-50 rounded-lg">
+                                <div class="text-lg font-bold text-green-700">5</div>
+                                <div class="text-xs text-green-600">🏢 In Use</div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-between">
                             <div class="flex gap-2 flex-wrap">
                                 <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Computer Vision</span>
-                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Diffusion Models</span>
+                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Diffusion</span>
                                 <span class="text-xs px-2 py-1 bg-pink-100 text-pink-700 rounded-full">3D Generation</span>
                             </div>
-                            <div class="flex items-center gap-4 text-sm text-gray-600">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    3 citations
-                                </span>
-                                <a href="#" class="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Code
-                                </a>
+                            <div class="flex items-center gap-3">
+                                <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Code</a>
+                                <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium">
+                                    + Save
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Paper Card 3 -->
+                    <!-- Compact Paper Card -->
                     <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-                                    Reinforcement Learning from AI Feedback: Learning without Human Preferences
+                                    Constitutional AI: Harmlessness from AI Feedback
                                 </h3>
                                 <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-sm text-gray-600">Lee, H. et al.</span>
+                                    <span class="text-sm text-gray-600">Bai, Y. et al.</span>
                                     <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">ArXiv Preprint</span>
+                                    <span class="text-sm text-gray-600">Anthropic</span>
                                     <span class="text-gray-300">•</span>
                                     <span class="text-sm text-gray-600">Oct 26, 2025</span>
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">🔥 Trending</span>
                                 </div>
                             </div>
-                            <button class="text-gray-400 hover:text-yellow-500 ml-4">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                                </svg>
-                            </button>
                         </div>
-                        
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                            We introduce RLAIF, a method that replaces human feedback in RLHF with AI-generated preferences. By using a capable language model to evaluate outputs, we demonstrate comparable alignment performance to RLHF while dramatically reducing annotation costs and enabling rapid iteration...
+
+                        <!-- Quick Insight -->
+                        <div class="mb-3 p-2 bg-purple-50 rounded border-l-4 border-purple-400">
+                            <p class="text-sm text-gray-700"><strong>Quick take:</strong> Train helpful, harmless AI using AI feedback instead of human labels - scales better and reduces bias.</p>
+                        </div>
+
+                        <p class="text-sm text-gray-600 mb-4">
+                            We propose Constitutional AI (CAI), a method for training AI systems to be helpful and harmless without relying on extensive human feedback for harmlessness. The method uses AI-generated critiques and revisions...
                         </p>
-                        
+
                         <div class="flex items-center justify-between">
-                            <div class="flex gap-2 flex-wrap">
+                            <div class="flex gap-2">
                                 <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                                <span class="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">RL</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">LLMs</span>
-                                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">Alignment</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">AI Safety</span>
+                                <span class="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">RLAIF</span>
                             </div>
-                            <div class="flex items-center gap-4 text-sm text-gray-600">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    8 citations
-                                </span>
-                                <a href="#" class="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Code
-                                </a>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-3 text-sm text-gray-600">
+                                    <span>523 📚</span>
+                                    <span>2.1k ⭐</span>
+                                    <span>178 💬</span>
+                                </div>
+                                <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium">
+                                    + Save
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Paper Card 4 -->
-                    <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-                                    Interpretable Machine Learning: A Survey on Methods and Metrics
-                                </h3>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-sm text-gray-600">Chen, Y. et al.</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">ICML 2025</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Oct 24, 2025</span>
+                    <!-- Why You Might Like Section -->
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            More Papers You Might Like
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                                <div class="font-semibold text-gray-900 mb-1">Mixture of Experts Layer</div>
+                                <div class="text-xs text-gray-600 mb-2">Switch Transformers at Scale</div>
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="text-green-600">✓ 92% match</span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="text-gray-600">You follow this topic</span>
                                 </div>
                             </div>
-                            <button class="text-yellow-500 ml-4">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                            This comprehensive survey examines the landscape of interpretability techniques in modern machine learning, from attention mechanisms and saliency maps to concept-based explanations. We propose a unified taxonomy and benchmark suite for evaluating interpretability methods...
-                        </p>
-                        
-                        <div class="flex items-center justify-between">
-                            <div class="flex gap-2 flex-wrap">
-                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">ML Theory</span>
-                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Interpretability</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Survey</span>
-                            </div>
-                            <div class="flex items-center gap-4 text-sm text-gray-600">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    45 citations
-                                </span>
-                                <span class="text-gray-400">No code</span>
+                            <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                                <div class="font-semibold text-gray-900 mb-1">LLaMA: Open Foundation Models</div>
+                                <div class="text-xs text-gray-600 mb-2">Meta's approach to efficient LLMs</div>
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="text-green-600">✓ 88% match</span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="text-gray-600">Similar to your saves</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Load More -->
-                    <div class="text-center pt-4">
-                        <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                            Load More Papers
-                        </button>
                     </div>
 
                 </div>
             </div>
         </main>
+
+        <!-- Right Sidebar - Reading List -->
+        <aside class="w-80 bg-white border-l border-gray-200 overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">📚 My Reading List</h2>
+                
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="p-3 bg-blue-50 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-600">5</div>
+                        <div class="text-xs text-gray-600">To Read</div>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-600">23</div>
+                        <div class="text-xs text-gray-600">Read</div>
+                    </div>
+                </div>
+
+                <!-- Reading List Items -->
+                <div class="space-y-3">
+                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm text-gray-900 mb-1">Attention Is All You Need</div>
+                                <div class="text-xs text-gray-600">Vaswani et al. • 2017</div>
+                            </div>
+                            <button class="text-gray-400 hover:text-red-500">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex gap-1">
+                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">NLP</span>
+                            <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">Transformers</span>
+                        </div>
+                    </div>
+
+                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm text-gray-900 mb-1">BERT: Pre-training of Deep Bidirectional Transformers</div>
+                                <div class="text-xs text-gray-600">Devlin et al. • 2018</div>
+                            </div>
+                            <button class="text-gray-400 hover:text-red-500">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex gap-1">
+                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">NLP</span>
+                        </div>
+                    </div>
+
+                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm text-gray-900 mb-1">ResNet: Deep Residual Learning</div>
+                                <div class="text-xs text-gray-600">He et al. • 2015</div>
+                            </div>
+                            <button class="text-gray-400 hover:text-red-500">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex gap-1">
+                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Computer Vision</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Section -->
+                <div class="mt-6 p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                    <div class="text-sm font-semibold text-gray-900 mb-2">📊 Your Research Insights</div>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div>• You've read <strong>23 papers</strong> this month</div>
+                        <div>• Most interested in: <strong>NLP</strong> & <strong>Diffusion Models</strong></div>
+                        <div>• Avg. reading time: <strong>12 min/paper</strong></div>
+                    </div>
+                </div>
+
+                <!-- Suggested Actions -->
+                <div class="mt-6">
+                    <div class="text-sm font-semibold text-gray-900 mb-3">💡 Suggested Actions</div>
+                    <div class="space-y-2">
+                        <button class="w-full text-left px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
+                            📧 Get weekly digest
+                        </button>
+                        <button class="w-full text-left px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
+                            👥 Share your reading list
+                        </button>
+                        <button class="w-full text-left px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm">
+                            📱 Export to Zotero
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 </body>
 </html>
