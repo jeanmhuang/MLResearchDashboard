@@ -592,32 +592,274 @@
         
         let savedPapers = new Set([1, 2, 3]); // IDs of saved papers
         let followedTopics = new Set(["Diffusion Models"]);
+        let currentPapers = [];
 
-        // Paper data
-        const papers = [
-            { 
-                id: 4, 
-                title: "Scaling Laws for Neural Language Models", 
-                authors: "Kaplan, J. et al.", 
-                org: "OpenAI",
-                isFeatured: true,
-                tags: ["NLP", "LLMs", "Scaling Laws"]
-            },
-            { 
-                id: 5, 
-                title: "DreamFusion: Text-to-3D using 2D Diffusion", 
-                authors: "Poole, B. et al.", 
-                org: "Google Research",
-                tags: ["Computer Vision", "Diffusion", "3D Generation"]
-            },
-            { 
-                id: 6, 
-                title: "Constitutional AI: Harmlessness from AI Feedback", 
-                authors: "Bai, Y. et al.", 
-                org: "Anthropic",
-                tags: ["NLP", "AI Safety", "RLAIF"]
+        // ArXiv API Integration
+        const ARXIV_API = 'https://export.arxiv.org/api/query';
+        
+        async function searchArXiv(query, maxResults = 20) {
+            try {
+                // Build search query
+                const searchQuery = query.trim() 
+                    ? `search_query=all:${encodeURIComponent(query)}&sortBy=submittedDate&sortOrder=descending`
+                    : 'search_query=cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.CV&sortBy=submittedDate&sortOrder=descending';
+                
+                const url = `${ARXIV_API}?${searchQuery}&start=0&max_results=${maxResults}`;
+                
+                showLoadingState();
+                
+                const response = await fetch(url);
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                
+                const entries = xmlDoc.querySelectorAll('entry');
+                const papers = [];
+                
+                entries.forEach((entry, index) => {
+                    const title = entry.querySelector('title')?.textContent.trim().replace(/\s+/g, ' ');
+                    const summary = entry.querySelector('summary')?.textContent.trim().replace(/\s+/g, ' ');
+                    const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent).join(', ');
+                    const published = entry.querySelector('published')?.textContent.split('T')[0];
+                    const link = entry.querySelector('id')?.textContent;
+                    const categories = Array.from(entry.querySelectorAll('category')).map(c => c.getAttribute('term'));
+                    
+                    // Extract primary category tags
+                    const tags = categories.slice(0, 3).map(cat => {
+                        if (cat.includes('cs.AI')) return 'AI';
+                        if (cat.includes('cs.LG')) return 'Machine Learning';
+                        if (cat.includes('cs.CL')) return 'NLP';
+                        if (cat.includes('cs.CV')) return 'Computer Vision';
+                        if (cat.includes('cs.RO')) return 'Robotics';
+                        if (cat.includes('stat.ML')) return 'ML Theory';
+                        return cat.split('.').pop();
+                    });
+                    
+                    papers.push({
+                        id: Date.now() + index,
+                        title,
+                        summary,
+                        authors: authors.split(', ').slice(0, 3).join(', ') + (authors.split(', ').length > 3 ? ' et al.' : ''),
+                        published,
+                        link,
+                        tags: [...new Set(tags)]
+                    });
+                });
+                
+                currentPapers = papers;
+                displayPapers(papers);
+                hideLoadingState();
+                
+                return papers;
+            } catch (error) {
+                console.error('Error fetching papers:', error);
+                hideLoadingState();
+                showError('Failed to fetch papers. Please try again.');
+                return [];
             }
-        ];
+        }
+
+        function displayPapers(papers) {
+            const container = document.querySelector('.space-y-6');
+            if (!container) return;
+            
+            // Clear existing papers (keep the first featured one)
+            const existingPapers = container.querySelectorAll('.paper-card');
+            existingPapers.forEach((card, index) => {
+                if (index > 0) card.remove(); // Keep first card as template
+            });
+            
+            // Remove no results message if exists
+            const noResults = document.getElementById('no-results-message');
+            if (noResults) noResults.remove();
+            
+            if (papers.length === 0) {
+                showNoResults();
+                return;
+            }
+            
+            // Display papers
+            papers.forEach((paper, index) => {
+                const paperCard = createPaperCard(paper, index);
+                container.appendChild(paperCard);
+            });
+            
+            // Update header count
+            const headerTitle = document.querySelector('header h2');
+            const currentQuery = document.querySelector('input[placeholder*="Search"]')?.value || '';
+            if (currentQuery) {
+                headerTitle.innerHTML = `
+                    🔍 Search Results
+                    <span class="text-sm font-normal text-gray-500">· Found ${papers.length} paper${papers.length !== 1 ? 's' : ''}</span>
+                `;
+            } else {
+                headerTitle.innerHTML = `
+                    ✨ Latest Research
+                    <span class="text-sm font-normal text-gray-500">· ${papers.length} recent papers from ArXiv</span>
+                `;
+            }
+        }
+
+        function createPaperCard(paper, index) {
+            const isNew = index < 3; // Mark first 3 as new
+            const card = document.createElement('div');
+            card.className = 'paper-card bg-white rounded-lg border border-gray-200 p-6';
+            card.style.cursor = 'pointer';
+            card.setAttribute('data-paper-id', paper.id);
+            
+            const tagColors = [
+                'bg-blue-100 text-blue-700',
+                'bg-purple-100 text-purple-700',
+                'bg-green-100 text-green-700',
+                'bg-orange-100 text-orange-700',
+                'bg-pink-100 text-pink-700'
+            ];
+            
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
+                                ${paper.title}
+                            </h3>
+                            ${isNew ? '<span class="new-badge text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium border border-blue-200">NEW</span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm text-gray-600">${paper.authors}</span>
+                            <span class="text-gray-300">•</span>
+                            <span class="text-sm text-gray-600">${paper.published}</span>
+                            <span class="text-gray-300">•</span>
+                            <a href="${paper.link}" target="_blank" class="text-sm text-blue-600 hover:underline">ArXiv</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-600 mb-4 line-clamp-3">
+                    ${paper.summary.substring(0, 280)}...
+                </p>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex gap-2 flex-wrap">
+                        ${paper.tags.map((tag, i) => `
+                            <span class="text-xs px-2 py-1 ${tagColors[i % tagColors.length]} rounded-full">${tag}</span>
+                        `).join('')}
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="${paper.link}" target="_blank" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                            View Paper
+                        </a>
+                        <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium" data-paper-id="${paper.id}">
+                            + Save
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add click handler for paper card
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
+                    return;
+                }
+                window.open(paper.link, '_blank');
+            });
+            
+            return card;
+        }
+
+        function showLoadingState() {
+            const container = document.querySelector('.space-y-6');
+            if (!container) return;
+            
+            let loader = document.getElementById('loading-papers');
+            if (!loader) {
+                loader = document.createElement('div');
+                loader.id = 'loading-papers';
+                loader.className = 'text-center py-12';
+                loader.innerHTML = `
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-gray-600">Searching ArXiv for papers...</p>
+                `;
+                container.appendChild(loader);
+            }
+        }
+
+        function hideLoadingState() {
+            const loader = document.getElementById('loading-papers');
+            if (loader) loader.remove();
+        }
+
+        function showNoResults() {
+            const container = document.querySelector('.space-y-6');
+            if (!container) return;
+            
+            const noResults = document.createElement('div');
+            noResults.id = 'no-results-message';
+            noResults.className = 'text-center py-12';
+            noResults.innerHTML = `
+                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-xl font-semibold text-gray-900 mb-2">No papers found</p>
+                <p class="text-gray-600">Try searching for different keywords like "transformer", "diffusion", or "reinforcement learning"</p>
+            `;
+            container.appendChild(noResults);
+        }
+
+        function showError(message) {
+            showNotification('❌ ' + message);
+        }
+
+        // Search functionality with ArXiv
+        const searchInput = document.querySelector('input[placeholder*="Search"]');
+        let searchTimeout;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+                
+                // Clear existing timeout
+                clearTimeout(searchTimeout);
+                
+                // Show clear button
+                const clearButton = searchInput.parentElement.querySelector('button');
+                if (clearButton) {
+                    clearButton.style.display = query ? 'block' : 'none';
+                }
+                
+                // Debounce search - wait 800ms after user stops typing
+                searchTimeout = setTimeout(() => {
+                    if (query.length >= 3 || query.length === 0) {
+                        searchArXiv(query);
+                    }
+                }, 800);
+            });
+            
+            // Add clear search button
+            const searchContainer = searchInput.parentElement;
+            const clearButton = document.createElement('button');
+            clearButton.className = 'absolute right-3 top-2.5 text-gray-400 hover:text-gray-600';
+            clearButton.style.display = 'none';
+            clearButton.innerHTML = `
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+            `;
+            searchContainer.appendChild(clearButton);
+            
+            // Clear search
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+            });
+        }
+
+        // Load initial papers on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                searchArXiv('', 15); // Load 15 recent ML papers
+            }, 500);
+        });
 
         // Save/Bookmark functionality
         document.addEventListener('click', function(e) {
