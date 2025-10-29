@@ -4,1243 +4,291 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ML Research Dashboard</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📑</text></svg>">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="ML Research Dashboard">
-    <meta property="og:description" content="AI-powered research discovery with smart summaries, personalized feeds, and impact metrics that matter.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/jeanmhuang/MLResearchDashboard/main/thumbnail.png?v=2">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .paper-card {
             transition: all 0.3s ease;
         }
         .paper-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .ai-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-        .metric-badge {
-            transition: transform 0.2s;
-        }
-        .metric-badge:hover {
-            transform: scale(1.1);
-        }
-        .lineage-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #3b82f6;
-        }
-        .reading-list-item {
-            transition: all 0.2s;
-        }
-        .reading-list-item:hover {
-            background: #f3f4f6;
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
-            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
-        }
-        .new-badge {
-            animation: pulse-glow 2s infinite;
-        }
+        .loading { animation: pulse 1.5s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-72 bg-white border-r border-gray-200 overflow-y-auto">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-1">ML Research</h1>
-                <p class="text-sm text-gray-500 mb-6">AI-Powered Discovery</p>
-                
-                <!-- User Profile -->
-                <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-900">ML Research Dashboard</h1>
+                        <span class="ml-3 text-sm text-gray-500">Real-time ArXiv papers</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="paperCount" class="text-sm text-gray-600">Loading...</span>
+                        <button onclick="location.reload()" class="p-2 text-gray-600 hover:text-gray-900">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-                        </div>
-                        <div>
-                            <div class="font-semibold text-gray-900">My Dashboard</div>
-                            <div class="text-xs text-gray-600">Personalized Feed Active</div>
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-600">
-                        <span class="font-medium">Following:</span> 12 topics · 8 researchers
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="mb-6">
-                    <button class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors mb-2">
-                        ✨ For You
-                    </button>
-                    <button class="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                        📚 My Reading List (5)
-                    </button>
-                </div>
-
-                <!-- Following -->
-                <div class="mb-6">
-                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Following</h2>
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between px-3 py-2 bg-purple-50 border border-purple-100 rounded-lg">
-                            <span class="text-sm font-medium text-gray-900">🔥 Diffusion Models</span>
-                            <span class="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium">3 new</span>
-                        </div>
-                        <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <span class="text-sm text-gray-700">Yann LeCun</span>
-                            <span class="text-xs text-gray-500">1 new</span>
-                        </div>
-                        <div class="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <span class="text-sm text-gray-700">Stanford AI Lab</span>
-                            <span class="text-xs text-gray-500">2 new</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Topics -->
-                <div class="mb-6">
-                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Browse Topics</h2>
-                    <nav class="space-y-1">
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>Computer Vision</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">42</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>NLP & LLMs</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">68</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>Reinforcement Learning</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">23</span>
-                        </a>
-                        <a href="#" class="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
-                            <span>Generative Models</span>
-                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">51</span>
-                        </a>
-                    </nav>
-                </div>
-
-                <!-- Smart Filters -->
-                <div>
-                    <h2 class="text-xs font-semibold text-gray-500 uppercase mb-3">Smart Filters</h2>
-                    <div class="space-y-2">
-                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                            <input type="checkbox" class="mr-2 rounded text-blue-600">
-                            <span>⚡ High Impact (50+ real usage)</span>
-                        </label>
-                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                            <input type="checkbox" class="mr-2 rounded text-blue-600" checked>
-                            <span>💻 Has Working Code</span>
-                        </label>
-                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                            <input type="checkbox" class="mr-2 rounded text-blue-600">
-                            <span>✅ Reproducible Results</span>
-                        </label>
-                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                            <input type="checkbox" class="mr-2 rounded text-blue-600">
-                            <span>🏢 Industry-Relevant</span>
-                        </label>
-                        <label class="flex items-center text-sm cursor-pointer hover:bg-gray-50 px-2 py-1 rounded">
-                            <input type="checkbox" class="mr-2 rounded text-blue-600">
-                            <span>🎓 Beginner-Friendly</span>
-                        </label>
+                        </button>
                     </div>
                 </div>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
-            <!-- Header -->
-            <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
-                <div class="px-8 py-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                ✨ For You
-                                <span class="text-sm font-normal text-gray-500">· Personalized based on your interests</span>
-                            </h2>
-                            <p class="text-sm text-gray-600 mt-1">AI-curated papers you should read this week</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option>This Week</option>
-                                <option>Last 7 Days</option>
-                                <option>Last 30 Days</option>
-                            </select>
-                        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Search and Filters -->
+            <div class="mb-8">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Search papers (e.g., transformer, diffusion, GPT, vision)..." 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                     </div>
-
-                    <!-- Search -->
-                    <div class="relative">
-                        <input type="text" placeholder="Search papers, researchers, or concepts..." 
-                               class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
+                    <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="cs.LG">Machine Learning</option>
+                        <option value="cs.AI">Artificial Intelligence</option>
+                        <option value="cs.CV">Computer Vision</option>
+                        <option value="cs.CL">Computation & Language</option>
+                        <option value="cs.NE">Neural & Evolutionary</option>
+                        <option value="stat.ML">Statistics ML</option>
+                    </select>
+                    <button 
+                        onclick="searchPapers()" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Search ArXiv
+                    </button>
                 </div>
-            </header>
+                
+                <!-- Quick Search Tags -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-sm text-gray-600 mr-2">Quick search:</span>
+                    <button onclick="quickSearch('transformer')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Transformer</button>
+                    <button onclick="quickSearch('diffusion')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Diffusion</button>
+                    <button onclick="quickSearch('llm')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">LLM</button>
+                    <button onclick="quickSearch('reinforcement learning')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">RL</button>
+                    <button onclick="quickSearch('vision transformer')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Vision Transformer</button>
+                    <button onclick="quickSearch('gpt')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">GPT</button>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="mb-4 p-4 bg-blue-50 text-blue-700 rounded-lg hidden"></div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="mb-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
 
             <!-- Papers Grid -->
-            <div class="p-8">
-                <div class="space-y-6">
-                    
-                    <!-- Featured Paper with AI Summary -->
-                    <div class="paper-card bg-white rounded-xl border-2 border-blue-200 shadow-lg overflow-hidden">
-                        <div class="ai-summary p-4 text-white">
-                            <div class="flex items-center gap-2 mb-2">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                                <span class="font-bold text-sm">TOP PICK FOR YOU · AI SUMMARY</span>
-                            </div>
-                            <h3 class="text-xl font-bold mb-2">Scaling Laws for Neural Language Models</h3>
-                            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-sm">
-                                <div class="font-semibold mb-1">🎯 Why This Matters:</div>
-                                <p class="mb-2">This paper reveals that model performance predictably improves with scale, helping you decide when to train bigger models vs. optimize existing ones.</p>
-                                <div class="font-semibold mb-1">💡 Key Insight:</div>
-                                <p>Performance follows power laws with model size, dataset size, and compute - you can predict results before expensive training.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="text-sm text-gray-600">Kaplan, J. et al.</span>
-                                <span class="text-gray-300">•</span>
-                                <span class="text-sm text-gray-600">OpenAI</span>
-                                <span class="text-gray-300">•</span>
-                                <span class="text-sm text-gray-600">Oct 27, 2025</span>
-                                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full ml-2">🏢 Used in Production</span>
-                            </div>
+            <div id="papersContainer" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Papers will be loaded here -->
+            </div>
 
-                            <!-- Research Lineage -->
-                            <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                <div class="text-xs font-semibold text-blue-900 mb-2 flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                    </svg>
-                                    RESEARCH LINEAGE
-                                </div>
-                                <div class="flex items-center gap-2 text-sm">
-                                    <span class="text-gray-700">Builds on:</span>
-                                    <a href="#" class="text-blue-600 hover:underline">GPT-3 (2020)</a>
-                                    <span class="text-gray-400">→</span>
-                                    <a href="#" class="text-blue-600 hover:underline">Chinchilla (2022)</a>
-                                    <span class="text-gray-400">→</span>
-                                    <span class="font-medium text-gray-900">This paper</span>
-                                </div>
-                            </div>
-
-                            <p class="text-sm text-gray-600 mb-4">
-                                We study empirical scaling laws for language model performance on the cross-entropy loss. The loss scales as a power-law with model size, dataset size, and compute, with some trends spanning more than seven orders of magnitude...
-                            </p>
-
-                            <!-- Enhanced Metrics -->
-                            <div class="grid grid-cols-5 gap-3 mb-4">
-                                <div class="metric-badge text-center p-2 bg-gray-50 rounded-lg cursor-pointer" title="Academic citations">
-                                    <div class="text-lg font-bold text-gray-900">847</div>
-                                    <div class="text-xs text-gray-600">Citations</div>
-                                </div>
-                                <div class="metric-badge text-center p-2 bg-purple-50 rounded-lg cursor-pointer" title="GitHub implementations">
-                                    <div class="text-lg font-bold text-purple-700">234</div>
-                                    <div class="text-xs text-purple-600">⭐ GitHub</div>
-                                </div>
-                                <div class="metric-badge text-center p-2 bg-blue-50 rounded-lg cursor-pointer" title="Blog posts & articles">
-                                    <div class="text-lg font-bold text-blue-700">89</div>
-                                    <div class="text-xs text-blue-600">📝 Blogs</div>
-                                </div>
-                                <div class="metric-badge text-center p-2 bg-orange-50 rounded-lg cursor-pointer" title="Discussion activity">
-                                    <div class="text-lg font-bold text-orange-700">156</div>
-                                    <div class="text-xs text-orange-600">💬 Discuss</div>
-                                </div>
-                                <div class="metric-badge text-center p-2 bg-green-50 rounded-lg cursor-pointer" title="Companies using this">
-                                    <div class="text-lg font-bold text-green-700">12</div>
-                                    <div class="text-xs text-green-600">🏢 In Use</div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <div class="flex gap-2 flex-wrap">
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                                    <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">LLMs</span>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">Scaling Laws</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <a href="#" class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Code
-                                    </a>
-                                    <button class="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 font-medium">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                                        </svg>
-                                        Save
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Regular Paper with Key Insights -->
-                    <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <h3 class="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
-                                        DreamFusion: Text-to-3D using 2D Diffusion
-                                    </h3>
-                                    <span class="new-badge text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium border border-blue-200">NEW</span>
-                                </div>
-                                <div class="flex items-center gap-2 mb-3">
-                                    <span class="text-sm text-gray-600">Poole, B. et al.</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Google Research</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Oct 28, 2025</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AI Key Insights -->
-                        <div class="mb-4 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-100">
-                            <div class="text-xs font-semibold text-purple-900 mb-2">🤖 AI KEY INSIGHTS</div>
-                            <ul class="text-sm text-gray-700 space-y-1">
-                                <li>• <strong>Novel approach:</strong> Uses 2D diffusion models to create 3D without 3D training data</li>
-                                <li>• <strong>Why it works:</strong> Score Distillation Sampling bridges 2D and 3D spaces</li>
-                                <li>• <strong>Impact:</strong> Makes 3D generation accessible without expensive 3D datasets</li>
-                            </ul>
-                        </div>
-
-                        <!-- Research Context -->
-                        <div class="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                            <div class="text-xs font-semibold text-amber-900 mb-1 flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                </svg>
-                                READ FIRST: 
-                                <a href="#" class="text-amber-700 hover:underline">Stable Diffusion</a>
-                                <span class="text-amber-600">·</span>
-                                <a href="#" class="text-amber-700 hover:underline">NeRF Basics</a>
-                            </div>
-                        </div>
-
-                        <p class="text-sm text-gray-600 mb-4">
-                            We combine neural rendering with pre-trained 2D diffusion models to synthesize 3D objects from text descriptions. Our approach leverages Score Distillation Sampling to enable optimization-based 3D synthesis...
-                        </p>
-
-                        <!-- Enhanced Metrics -->
-                        <div class="grid grid-cols-5 gap-3 mb-4">
-                            <div class="metric-badge text-center p-2 bg-gray-50 rounded-lg">
-                                <div class="text-lg font-bold text-gray-900">12</div>
-                                <div class="text-xs text-gray-600">Citations</div>
-                            </div>
-                            <div class="metric-badge text-center p-2 bg-purple-50 rounded-lg">
-                                <div class="text-lg font-bold text-purple-700">1.2k</div>
-                                <div class="text-xs text-purple-600">⭐ GitHub</div>
-                            </div>
-                            <div class="metric-badge text-center p-2 bg-blue-50 rounded-lg">
-                                <div class="text-lg font-bold text-blue-700">45</div>
-                                <div class="text-xs text-blue-600">📝 Blogs</div>
-                            </div>
-                            <div class="metric-badge text-center p-2 bg-orange-50 rounded-lg">
-                                <div class="text-lg font-bold text-orange-700">289</div>
-                                <div class="text-xs text-orange-600">💬 Discuss</div>
-                            </div>
-                            <div class="metric-badge text-center p-2 bg-green-50 rounded-lg">
-                                <div class="text-lg font-bold text-green-700">5</div>
-                                <div class="text-xs text-green-600">🏢 In Use</div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex gap-2 flex-wrap">
-                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Computer Vision</span>
-                                <span class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">Diffusion</span>
-                                <span class="text-xs px-2 py-1 bg-pink-100 text-pink-700 rounded-full">3D Generation</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Code</a>
-                                <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium">
-                                    + Save
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Compact Paper Card -->
-                    <div class="paper-card bg-white rounded-lg border border-gray-200 p-6">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
-                                    Constitutional AI: Harmlessness from AI Feedback
-                                </h3>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-sm text-gray-600">Bai, Y. et al.</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Anthropic</span>
-                                    <span class="text-gray-300">•</span>
-                                    <span class="text-sm text-gray-600">Oct 26, 2025</span>
-                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">🔥 Trending</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quick Insight -->
-                        <div class="mb-3 p-2 bg-purple-50 rounded border-l-4 border-purple-400">
-                            <p class="text-sm text-gray-700"><strong>Quick take:</strong> Train helpful, harmless AI using AI feedback instead of human labels - scales better and reduces bias.</p>
-                        </div>
-
-                        <p class="text-sm text-gray-600 mb-4">
-                            We propose Constitutional AI (CAI), a method for training AI systems to be helpful and harmless without relying on extensive human feedback for harmlessness. The method uses AI-generated critiques and revisions...
-                        </p>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex gap-2">
-                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">AI Safety</span>
-                                <span class="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full">RLAIF</span>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <div class="flex items-center gap-3 text-sm text-gray-600">
-                                    <span>523 📚</span>
-                                    <span>2.1k ⭐</span>
-                                    <span>178 💬</span>
-                                </div>
-                                <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium">
-                                    + Save
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Why You Might Like Section -->
-                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
-                        <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
-                            More Papers You Might Like
-                        </h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                                <div class="font-semibold text-gray-900 mb-1">Mixture of Experts Layer</div>
-                                <div class="text-xs text-gray-600 mb-2">Switch Transformers at Scale</div>
-                                <div class="flex items-center gap-2 text-xs">
-                                    <span class="text-green-600">✓ 92% match</span>
-                                    <span class="text-gray-400">•</span>
-                                    <span class="text-gray-600">You follow this topic</span>
-                                </div>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                                <div class="font-semibold text-gray-900 mb-1">LLaMA: Open Foundation Models</div>
-                                <div class="text-xs text-gray-600 mb-2">Meta's approach to efficient LLMs</div>
-                                <div class="flex items-center gap-2 text-xs">
-                                    <span class="text-green-600">✓ 88% match</span>
-                                    <span class="text-gray-400">•</span>
-                                    <span class="text-gray-600">Similar to your saves</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="flex justify-center items-center py-12">
+                <div class="text-center">
+                    <div class="loading text-4xl mb-2">🔍</div>
+                    <p class="text-gray-600">Loading papers from ArXiv...</p>
                 </div>
             </div>
-        </main>
 
-        <!-- Right Sidebar - Reading List -->
-        <aside class="w-80 bg-white border-l border-gray-200 overflow-y-auto">
-            <div class="p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">📚 My Reading List</h2>
-                
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="p-3 bg-blue-50 rounded-lg text-center">
-                        <div class="text-2xl font-bold text-blue-600">5</div>
-                        <div class="text-xs text-gray-600">To Read</div>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-lg text-center">
-                        <div class="text-2xl font-bold text-green-600">23</div>
-                        <div class="text-xs text-gray-600">Read</div>
-                    </div>
-                </div>
-
-                <!-- Reading List Items -->
-                <div class="space-y-3">
-                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
-                        <div class="flex items-start justify-between mb-2">
-                            <div class="flex-1">
-                                <div class="font-semibold text-sm text-gray-900 mb-1">Attention Is All You Need</div>
-                                <div class="text-xs text-gray-600">Vaswani et al. • 2017</div>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                            <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">Transformers</span>
-                        </div>
-                    </div>
-
-                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
-                        <div class="flex items-start justify-between mb-2">
-                            <div class="flex-1">
-                                <div class="font-semibold text-sm text-gray-900 mb-1">BERT: Pre-training of Deep Bidirectional Transformers</div>
-                                <div class="text-xs text-gray-600">Devlin et al. • 2018</div>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">NLP</span>
-                        </div>
-                    </div>
-
-                    <div class="reading-list-item p-3 border border-gray-200 rounded-lg cursor-pointer">
-                        <div class="flex items-start justify-between mb-2">
-                            <div class="flex-1">
-                                <div class="font-semibold text-sm text-gray-900 mb-1">ResNet: Deep Residual Learning</div>
-                                <div class="text-xs text-gray-600">He et al. • 2015</div>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Computer Vision</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Insights Section -->
-                <div class="mt-6 p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-                    <div class="text-sm font-semibold text-gray-900 mb-2">📊 Your Research Insights</div>
-                    <div class="space-y-2 text-sm text-gray-700">
-                        <div>• You've read <strong>23 papers</strong> this month</div>
-                        <div>• Most interested in: <strong>NLP</strong> & <strong>Diffusion Models</strong></div>
-                        <div>• Avg. reading time: <strong>12 min/paper</strong></div>
-                    </div>
-                </div>
-
-                <!-- Suggested Actions -->
-                <div class="mt-6">
-                    <div class="text-sm font-semibold text-gray-900 mb-3">💡 Suggested Actions</div>
-                    <div class="space-y-2">
-                        <button class="w-full text-left px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
-                            📧 Get weekly digest
-                        </button>
-                        <button class="w-full text-left px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
-                            👥 Share your reading list
-                        </button>
-                        <button class="w-full text-left px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm">
-                            📱 Export to Zotero
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </aside>
-    </div>
-
-    <!-- Visitor Counter Footer -->
-    <footer class="bg-gray-900 text-white py-4">
-        <div class="max-w-7xl mx-auto px-8">
-            <div class="flex items-center justify-center gap-6 text-sm">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                    </svg>
-                    <span class="text-gray-300">Total Visitors:</span>
-                    <span id="visitor-count" class="text-xl font-bold text-blue-400">0</span>
-                </div>
-                <div class="text-gray-500">|</div>
-                <div class="text-gray-400">
-                    Made with ❤️ for ML Researchers
-                </div>
+            <!-- Load More Button -->
+            <div id="loadMoreContainer" class="mt-8 text-center hidden">
+                <button 
+                    onclick="loadMore()" 
+                    class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                    Load More Papers
+                </button>
             </div>
         </div>
-    </footer>
+    </div>
 
     <script>
-        // State management
-        let readingList = [
-            { id: 1, title: "Attention Is All You Need", authors: "Vaswani et al.", year: "2017", tags: ["NLP", "Transformers"] },
-            { id: 2, title: "BERT: Pre-training of Deep Bidirectional Transformers", authors: "Devlin et al.", year: "2018", tags: ["NLP"] },
-            { id: 3, title: "ResNet: Deep Residual Learning", authors: "He et al.", year: "2015", tags: ["Computer Vision"] }
-        ];
-        
-        let savedPapers = new Set([1, 2, 3]); // IDs of saved papers
-        let followedTopics = new Set(["Diffusion Models"]);
-        let currentPapers = [];
+        let currentStart = 0;
+        let currentQuery = '';
+        let savedPapers = JSON.parse(localStorage.getItem('savedPapers') || '[]');
 
-        // ArXiv API Integration
-        const ARXIV_API = 'https://export.arxiv.org/api/query';
-        
-        async function searchArXiv(query, maxResults = 20) {
+        // Use CORS proxy to access ArXiv API
+        const CORS_PROXY = 'https://corsproxy.io/?';
+        const ARXIV_API = 'http://export.arxiv.org/api/query';
+
+        function showStatus(message) {
+            const status = document.getElementById('statusMessage');
+            status.textContent = message;
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 3000);
+        }
+
+        function showError(message) {
+            const error = document.getElementById('errorMessage');
+            error.textContent = message;
+            error.classList.remove('hidden');
+            setTimeout(() => error.classList.add('hidden'), 5000);
+        }
+
+        async function fetchPapers(query = '', start = 0) {
             try {
-                // Build search query
-                const searchQuery = query.trim() 
-                    ? `search_query=all:${encodeURIComponent(query)}&sortBy=submittedDate&sortOrder=descending`
-                    : 'search_query=cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.CV&sortBy=submittedDate&sortOrder=descending';
+                const category = document.getElementById('categoryFilter').value;
+                const searchQuery = query 
+                    ? `all:${query} AND cat:${category}`
+                    : `cat:${category}`;
                 
-                const url = `${ARXIV_API}?${searchQuery}&start=0&max_results=${maxResults}`;
+                const url = `${CORS_PROXY}${ARXIV_API}?search_query=${encodeURIComponent(searchQuery)}&start=${start}&max_results=12&sortBy=lastUpdatedDate&sortOrder=descending`;
                 
-                showLoadingState();
+                console.log('Fetching from:', url);
                 
                 const response = await fetch(url);
-                const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
                 
-                const entries = xmlDoc.querySelectorAll('entry');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(text, 'text/xml');
+                
+                const entries = xml.querySelectorAll('entry');
                 const papers = [];
                 
-                entries.forEach((entry, index) => {
-                    const title = entry.querySelector('title')?.textContent.trim().replace(/\s+/g, ' ');
-                    const summary = entry.querySelector('summary')?.textContent.trim().replace(/\s+/g, ' ');
-                    const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent).join(', ');
-                    const published = entry.querySelector('published')?.textContent.split('T')[0];
-                    const link = entry.querySelector('id')?.textContent;
+                entries.forEach(entry => {
+                    const title = entry.querySelector('title')?.textContent?.trim() || 'No title';
+                    const summary = entry.querySelector('summary')?.textContent?.trim() || 'No summary';
+                    const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent).slice(0, 3);
+                    const published = entry.querySelector('published')?.textContent?.split('T')[0] || '';
+                    const link = entry.querySelector('id')?.textContent || '#';
                     const categories = Array.from(entry.querySelectorAll('category')).map(c => c.getAttribute('term'));
                     
-                    // Extract primary category tags
-                    const tags = categories.slice(0, 3).map(cat => {
-                        if (cat.includes('cs.AI')) return 'AI';
-                        if (cat.includes('cs.LG')) return 'Machine Learning';
-                        if (cat.includes('cs.CL')) return 'NLP';
-                        if (cat.includes('cs.CV')) return 'Computer Vision';
-                        if (cat.includes('cs.RO')) return 'Robotics';
-                        if (cat.includes('stat.ML')) return 'ML Theory';
-                        return cat.split('.').pop();
-                    });
-                    
                     papers.push({
-                        id: Date.now() + index,
                         title,
-                        summary,
-                        authors: authors.split(', ').slice(0, 3).join(', ') + (authors.split(', ').length > 3 ? ' et al.' : ''),
-                        published,
-                        link,
-                        tags: [...new Set(tags)]
+                        summary: summary.substring(0, 200) + '...',
+                        authors: authors.join(', ') + (authors.length > 3 ? ' et al.' : ''),
+                        date: published,
+                        link: link.replace('http://', 'https://'),
+                        categories: categories.slice(0, 3)
                     });
                 });
-                
-                currentPapers = papers;
-                displayPapers(papers);
-                hideLoadingState();
                 
                 return papers;
             } catch (error) {
                 console.error('Error fetching papers:', error);
-                hideLoadingState();
-                showError('Failed to fetch papers. Please try again.');
+                showError('Failed to fetch papers. The CORS proxy might be down. Try again later.');
                 return [];
             }
         }
 
-        function displayPapers(papers) {
-            const container = document.querySelector('.space-y-6');
-            if (!container) return;
+        function renderPapers(papers, append = false) {
+            const container = document.getElementById('papersContainer');
+            const loading = document.getElementById('loadingIndicator');
             
-            // Clear existing papers (keep the first featured one)
-            const existingPapers = container.querySelectorAll('.paper-card');
-            existingPapers.forEach((card, index) => {
-                if (index > 0) card.remove(); // Keep first card as template
-            });
+            if (!append) {
+                container.innerHTML = '';
+            }
             
-            // Remove no results message if exists
-            const noResults = document.getElementById('no-results-message');
-            if (noResults) noResults.remove();
+            loading.classList.add('hidden');
             
-            if (papers.length === 0) {
-                showNoResults();
+            if (papers.length === 0 && !append) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No papers found. Try a different search term or category.</div>';
                 return;
             }
             
-            // Display papers
-            papers.forEach((paper, index) => {
-                const paperCard = createPaperCard(paper, index);
+            papers.forEach(paper => {
+                const paperCard = document.createElement('div');
+                paperCard.className = 'paper-card bg-white rounded-lg shadow-md p-6 hover:shadow-xl';
+                
+                const isSaved = savedPapers.some(p => p.link === paper.link);
+                
+                paperCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-semibold text-gray-900 flex-1 mr-2">${paper.title}</h3>
+                        <button onclick="toggleSave('${paper.link}')" class="text-gray-400 hover:text-yellow-500">
+                            ${isSaved ? '⭐' : '☆'}
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">By ${paper.authors}</p>
+                    <p class="text-sm text-gray-500 mb-3">${paper.date}</p>
+                    <p class="text-gray-700 mb-4">${paper.summary}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${paper.categories.map(cat => `
+                            <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">${cat}</span>
+                        `).join('')}
+                    </div>
+                    <a href="${paper.link}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        View on ArXiv →
+                    </a>
+                `;
+                
                 container.appendChild(paperCard);
             });
             
-            // Update header count
-            const headerTitle = document.querySelector('header h2');
-            const currentQuery = document.querySelector('input[placeholder*="Search"]')?.value || '';
-            if (currentQuery) {
-                headerTitle.innerHTML = `
-                    🔍 Search Results
-                    <span class="text-sm font-normal text-gray-500">· Found ${papers.length} paper${papers.length !== 1 ? 's' : ''}</span>
-                `;
+            document.getElementById('paperCount').textContent = `${container.children.length} papers loaded`;
+            
+            if (papers.length === 12) {
+                document.getElementById('loadMoreContainer').classList.remove('hidden');
             } else {
-                headerTitle.innerHTML = `
-                    ✨ Latest Research
-                    <span class="text-sm font-normal text-gray-500">· ${papers.length} recent papers from ArXiv</span>
-                `;
+                document.getElementById('loadMoreContainer').classList.add('hidden');
             }
         }
 
-        function createPaperCard(paper, index) {
-            const isNew = index < 3; // Mark first 3 as new
-            const card = document.createElement('div');
-            card.className = 'paper-card bg-white rounded-lg border border-gray-200 p-6';
-            card.style.cursor = 'pointer';
-            card.setAttribute('data-paper-id', paper.id);
-            
-            const tagColors = [
-                'bg-blue-100 text-blue-700',
-                'bg-purple-100 text-purple-700',
-                'bg-green-100 text-green-700',
-                'bg-orange-100 text-orange-700',
-                'bg-pink-100 text-pink-700'
-            ];
-            
-            card.innerHTML = `
-                <div class="flex items-start justify-between mb-3">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-2">
-                            <h3 class="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
-                                ${paper.title}
-                            </h3>
-                            ${isNew ? '<span class="new-badge text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium border border-blue-200">NEW</span>' : ''}
-                        </div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-sm text-gray-600">${paper.authors}</span>
-                            <span class="text-gray-300">•</span>
-                            <span class="text-sm text-gray-600">${paper.published}</span>
-                            <span class="text-gray-300">•</span>
-                            <a href="${paper.link}" target="_blank" class="text-sm text-blue-600 hover:underline">ArXiv</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                    ${paper.summary.substring(0, 280)}...
-                </p>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex gap-2 flex-wrap">
-                        ${paper.tags.map((tag, i) => `
-                            <span class="text-xs px-2 py-1 ${tagColors[i % tagColors.length]} rounded-full">${tag}</span>
-                        `).join('')}
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <a href="${paper.link}" target="_blank" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
-                            View Paper
-                        </a>
-                        <button class="px-3 py-1 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 font-medium" data-paper-id="${paper.id}">
-                            + Save
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Add click handler for paper card
-            card.addEventListener('click', function(e) {
-                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
-                    return;
-                }
-                window.open(paper.link, '_blank');
-            });
-            
-            return card;
+        function toggleSave(link) {
+            const paperIndex = savedPapers.findIndex(p => p.link === link);
+            if (paperIndex > -1) {
+                savedPapers.splice(paperIndex, 1);
+            } else {
+                // Find the paper data (simplified version)
+                savedPapers.push({ link });
+            }
+            localStorage.setItem('savedPapers', JSON.stringify(savedPapers));
+            searchPapers(); // Re-render
         }
 
-        function showLoadingState() {
-            const container = document.querySelector('.space-y-6');
-            if (!container) return;
+        async function searchPapers() {
+            const query = document.getElementById('searchInput').value.trim();
+            currentQuery = query;
+            currentStart = 0;
             
-            let loader = document.getElementById('loading-papers');
-            if (!loader) {
-                loader = document.createElement('div');
-                loader.id = 'loading-papers';
-                loader.className = 'text-center py-12';
-                loader.innerHTML = `
-                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                    <p class="text-gray-600">Searching ArXiv for papers...</p>
-                `;
-                container.appendChild(loader);
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            document.getElementById('papersContainer').innerHTML = '';
+            
+            const papers = await fetchPapers(query, 0);
+            renderPapers(papers);
+            
+            if (papers.length > 0) {
+                showStatus(`Found ${papers.length} papers${query ? ` for "${query}"` : ''}`);
             }
         }
 
-        function hideLoadingState() {
-            const loader = document.getElementById('loading-papers');
-            if (loader) loader.remove();
+        async function loadMore() {
+            currentStart += 12;
+            const papers = await fetchPapers(currentQuery, currentStart);
+            renderPapers(papers, true);
         }
 
-        function showNoResults() {
-            const container = document.querySelector('.space-y-6');
-            if (!container) return;
-            
-            const noResults = document.createElement('div');
-            noResults.id = 'no-results-message';
-            noResults.className = 'text-center py-12';
-            noResults.innerHTML = `
-                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <p class="text-xl font-semibold text-gray-900 mb-2">No papers found</p>
-                <p class="text-gray-600">Try searching for different keywords like "transformer", "diffusion", or "reinforcement learning"</p>
-            `;
-            container.appendChild(noResults);
+        function quickSearch(term) {
+            document.getElementById('searchInput').value = term;
+            searchPapers();
         }
 
-        function showError(message) {
-            showNotification('❌ ' + message);
-        }
-
-        // Search functionality with ArXiv
-        const searchInput = document.querySelector('input[placeholder*="Search"]');
-        let searchTimeout;
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.trim();
-                
-                // Clear existing timeout
-                clearTimeout(searchTimeout);
-                
-                // Show clear button
-                const clearButton = searchInput.parentElement.querySelector('button');
-                if (clearButton) {
-                    clearButton.style.display = query ? 'block' : 'none';
-                }
-                
-                // Debounce search - wait 800ms after user stops typing
-                searchTimeout = setTimeout(() => {
-                    if (query.length >= 3 || query.length === 0) {
-                        searchArXiv(query);
-                    }
-                }, 800);
-            });
-            
-            // Add clear search button
-            const searchContainer = searchInput.parentElement;
-            const clearButton = document.createElement('button');
-            clearButton.className = 'absolute right-3 top-2.5 text-gray-400 hover:text-gray-600';
-            clearButton.style.display = 'none';
-            clearButton.innerHTML = `
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-            `;
-            searchContainer.appendChild(clearButton);
-            
-            // Clear search
-            clearButton.addEventListener('click', function() {
-                searchInput.value = '';
-                searchInput.dispatchEvent(new Event('input'));
-                searchInput.focus();
-            });
-        }
+        // Handle Enter key in search input
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchPapers();
+            }
+        });
 
         // Load initial papers on page load
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                searchArXiv('', 15); // Load 15 recent ML papers
-            }, 500);
+        window.addEventListener('load', () => {
+            searchPapers();
         });
-
-        // Save/Bookmark functionality
-        document.addEventListener('click', function(e) {
-            // Handle save buttons
-            if (e.target.closest('button') && e.target.closest('button').textContent.includes('Save')) {
-                const button = e.target.closest('button');
-                const paperId = parseInt(button.getAttribute('data-paper-id') || Math.random() * 1000);
-                
-                if (savedPapers.has(paperId)) {
-                    savedPapers.delete(paperId);
-                    button.innerHTML = button.innerHTML.includes('bg-blue-600') 
-                        ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg> Save'
-                        : '+ Save';
-                    button.className = button.className.replace('bg-blue-600', 'bg-white border border-gray-300')
-                                                       .replace('text-white', 'text-gray-700')
-                                                       .replace('hover:bg-blue-700', 'hover:bg-gray-50');
-                    showNotification('Removed from reading list');
-                } else {
-                    savedPapers.add(paperId);
-                    button.innerHTML = button.innerHTML.includes('flex items-center') 
-                        ? '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg> Saved'
-                        : '✓ Saved';
-                    button.className = button.className.replace('bg-white border border-gray-300', 'bg-blue-600')
-                                                       .replace('text-gray-700', 'text-white')
-                                                       .replace('hover:bg-gray-50', 'hover:bg-blue-700');
-                    showNotification('Added to reading list!');
-                }
-                
-                updateReadingListCount();
-            }
-
-            // Handle bookmark icons in header
-            if (e.target.closest('button') && e.target.closest('button').querySelector('svg') && 
-                e.target.closest('button').querySelector('path[d*="M5 5a2 2 0 012-2h10"]')) {
-                const button = e.target.closest('button');
-                const svg = button.querySelector('svg');
-                const path = svg.querySelector('path');
-                
-                if (svg.getAttribute('fill') === 'currentColor') {
-                    svg.setAttribute('fill', 'none');
-                    path.setAttribute('fill-rule', 'evenodd');
-                    button.className = button.className.replace('text-yellow-500', 'text-gray-400 hover:text-yellow-500');
-                    showNotification('Removed from reading list');
-                } else {
-                    svg.setAttribute('fill', 'currentColor');
-                    path.removeAttribute('fill-rule');
-                    button.className = button.className.replace('text-gray-400 hover:text-yellow-500', 'text-yellow-500');
-                    showNotification('Added to reading list!');
-                }
-                
-                updateReadingListCount();
-            }
-
-            // Handle topic following
-            if (e.target.closest('.flex.items-center.justify-between.px-3.py-2') && 
-                e.target.closest('.flex.items-center.justify-between.px-3.py-2').textContent.includes('Diffusion Models')) {
-                const topicElement = e.target.closest('.flex.items-center.justify-between.px-3.py-2');
-                const topicName = "Diffusion Models";
-                
-                if (followedTopics.has(topicName)) {
-                    followedTopics.delete(topicName);
-                    topicElement.className = topicElement.className.replace('bg-purple-50 border border-purple-100', 'hover:bg-gray-50');
-                    topicElement.querySelector('.text-xs').className = 'text-xs text-gray-500';
-                    showNotification('Unfollowed Diffusion Models');
-                } else {
-                    followedTopics.add(topicName);
-                    topicElement.className = topicElement.className.replace('hover:bg-gray-50', 'bg-purple-50 border border-purple-100');
-                    topicElement.querySelector('.text-xs').className = 'text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium';
-                    showNotification('Following Diffusion Models!');
-                }
-            }
-
-            // Handle filter checkboxes
-            if (e.target.type === 'checkbox') {
-                const label = e.target.parentElement.textContent.trim();
-                if (e.target.checked) {
-                    showNotification(`Filter applied: ${label}`);
-                } else {
-                    showNotification(`Filter removed: ${label}`);
-                }
-            }
-        });
-
-        // Search functionality
-        const searchInput = document.querySelector('input[placeholder*="Search"]');
-        if (searchInput) {
-            searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase().trim();
-                const paperCards = document.querySelectorAll('.paper-card');
-                let visibleCount = 0;
-                
-                paperCards.forEach(card => {
-                    const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-                    const authors = card.querySelector('.text-sm.text-gray-600')?.textContent.toLowerCase() || '';
-                    const tags = Array.from(card.querySelectorAll('.text-xs.px-2.py-1'))
-                        .map(tag => tag.textContent.toLowerCase())
-                        .join(' ');
-                    
-                    const searchableText = `${title} ${authors} ${tags}`;
-                    
-                    if (query === '' || searchableText.includes(query)) {
-                        card.style.display = 'block';
-                        visibleCount++;
-                        
-                        // Highlight matching text
-                        if (query.length > 0) {
-                            card.style.backgroundColor = '#fefce8'; // Light yellow highlight
-                            card.style.borderColor = '#fbbf24';
-                        } else {
-                            card.style.backgroundColor = 'white';
-                            card.style.borderColor = '#e5e7eb';
-                        }
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-                
-                // Show/hide no results message
-                let noResults = document.getElementById('no-results-message');
-                if (visibleCount === 0 && query.length > 0) {
-                    if (!noResults) {
-                        noResults = document.createElement('div');
-                        noResults.id = 'no-results-message';
-                        noResults.className = 'text-center py-12';
-                        noResults.innerHTML = `
-                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p class="text-xl font-semibold text-gray-900 mb-2">No papers found</p>
-                            <p class="text-gray-600">Try searching for different keywords or topics</p>
-                        `;
-                        paperCards[0]?.parentElement.appendChild(noResults);
-                    }
-                    noResults.style.display = 'block';
-                } else if (noResults) {
-                    noResults.style.display = 'none';
-                }
-                
-                // Update header to show search results count
-                const headerTitle = document.querySelector('header h2');
-                if (query.length > 0) {
-                    headerTitle.innerHTML = `
-                        🔍 Search Results
-                        <span class="text-sm font-normal text-gray-500">· Found ${visibleCount} paper${visibleCount !== 1 ? 's' : ''}</span>
-                    `;
-                } else {
-                    headerTitle.innerHTML = `
-                        ✨ For You
-                        <span class="text-sm font-normal text-gray-500">· Personalized based on your interests</span>
-                    `;
-                }
-            });
-            
-            // Add clear search button
-            const searchContainer = searchInput.parentElement;
-            const clearButton = document.createElement('button');
-            clearButton.className = 'absolute right-3 top-2.5 text-gray-400 hover:text-gray-600';
-            clearButton.style.display = 'none';
-            clearButton.innerHTML = `
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                </svg>
-            `;
-            searchContainer.appendChild(clearButton);
-            
-            // Show/hide clear button
-            searchInput.addEventListener('input', function() {
-                clearButton.style.display = this.value ? 'block' : 'none';
-            });
-            
-            // Clear search
-            clearButton.addEventListener('click', function() {
-                searchInput.value = '';
-                searchInput.dispatchEvent(new Event('input'));
-                searchInput.focus();
-            });
-        }
-
-        // Sort dropdown functionality
-        const sortDropdowns = document.querySelectorAll('select');
-        sortDropdowns.forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                const value = e.target.value;
-                showNotification(`Sorting by: ${value}`);
-            });
-        });
-
-        // Update reading list count
-        function updateReadingListCount() {
-            const countElements = document.querySelectorAll('.text-2xl.font-bold.text-blue-600');
-            if (countElements[0]) {
-                countElements[0].textContent = savedPapers.size;
-            }
-            
-            const buttonText = document.querySelector('button[class*="My Reading List"]');
-            if (buttonText) {
-                buttonText.textContent = `📚 My Reading List (${savedPapers.size})`;
-            }
-        }
-
-        // Notification system
-        function showNotification(message) {
-            // Remove existing notification
-            const existing = document.querySelector('.notification-toast');
-            if (existing) existing.remove();
-            
-            // Create notification
-            const notification = document.createElement('div');
-            notification.className = 'notification-toast fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all';
-            notification.style.animation = 'slideIn 0.3s ease-out';
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Add paper IDs to save buttons
-        document.querySelectorAll('button').forEach((button, index) => {
-            if (button.textContent.includes('Save') || button.textContent.includes('Saved')) {
-                button.setAttribute('data-paper-id', papers[index % papers.length]?.id || index);
-            }
-        });
-
-        // Handle "My Reading List" button click
-        const readingListButton = document.querySelector('button[class*="My Reading List"]');
-        if (readingListButton) {
-            readingListButton.addEventListener('click', function() {
-                showNotification('Reading list panel is already open! →');
-            });
-        }
-
-        // Handle "For You" button
-        const forYouButton = document.querySelector('button[class*="For You"]');
-        if (forYouButton) {
-            forYouButton.addEventListener('click', function() {
-                showNotification('Already viewing your personalized feed!');
-            });
-        }
-
-        // Handle action buttons in reading list sidebar
-        document.querySelectorAll('button[class*="weekly digest"], button[class*="Share"], button[class*="Export"]').forEach(button => {
-            button.addEventListener('click', function() {
-                const action = this.textContent.trim();
-                showNotification(`${action} feature coming soon!`);
-            });
-        });
-
-        // Handle remove from reading list
-        document.querySelectorAll('.reading-list-item button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const item = this.closest('.reading-list-item');
-                item.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => {
-                    item.remove();
-                    savedPapers.delete(savedPapers.values().next().value);
-                    updateReadingListCount();
-                    showNotification('Removed from reading list');
-                }, 300);
-            });
-        });
-
-        // Handle paper card clicks for reading
-        document.querySelectorAll('.paper-card').forEach(card => {
-            card.style.cursor = 'pointer';
-            card.addEventListener('click', function(e) {
-                // Don't trigger if clicking on a button or link
-                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
-                    return;
-                }
-                const title = this.querySelector('h3').textContent;
-                showNotification(`Opening: ${title.substring(0, 40)}...`);
-            });
-        });
-
-        // Handle metric badges hover
-        document.querySelectorAll('.metric-badge').forEach(badge => {
-            badge.style.cursor = 'pointer';
-            badge.addEventListener('click', function() {
-                const metric = this.querySelector('.text-xs').textContent;
-                showNotification(`Viewing ${metric} details...`);
-            });
-        });
-
-        <!-- Initialize -->
-        updateReadingListCount();
-        console.log('ML Research Dashboard initialized! All interactive features are now working.');
-
-        // Visitor Counter
-        function initVisitorCounter() {
-            const counterElement = document.getElementById('visitor-count');
-            if (!counterElement) return;
-
-            // Try to get count from API first (using a free counter service)
-            // For demo: using localStorage + random increment to simulate real visitors
-            const STORAGE_KEY = 'ml_dashboard_visitors';
-            const LAST_VISIT_KEY = 'ml_dashboard_last_visit';
-            
-            let visitorCount = parseInt(localStorage.getItem(STORAGE_KEY)) || 1247; // Start at realistic number
-            const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
-            const now = Date.now();
-            const oneDay = 24 * 60 * 60 * 1000;
-
-            // If it's been more than a day, increment by random amount (simulating other visitors)
-            if (lastVisit) {
-                const daysSince = Math.floor((now - parseInt(lastVisit)) / oneDay);
-                if (daysSince > 0) {
-                    visitorCount += Math.floor(Math.random() * 50 * daysSince) + daysSince * 10;
-                }
-            }
-
-            // Increment for this visit
-            visitorCount++;
-            
-            // Save to localStorage
-            localStorage.setItem(STORAGE_KEY, visitorCount.toString());
-            localStorage.setItem(LAST_VISIT_KEY, now.toString());
-
-            // Animate the counter
-            animateCounter(counterElement, visitorCount);
-
-            // Optional: Send to real analytics service
-            // fetch('https://your-counter-api.com/increment', { method: 'POST' });
-        }
-
-        function animateCounter(element, targetValue) {
-            const duration = 2000; // 2 seconds
-            const start = Math.max(0, targetValue - 20); // Start slightly below
-            const startTime = Date.now();
-
-            function update() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Easing function for smooth animation
-                const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                const current = Math.floor(start + (targetValue - start) * easeOutQuart);
-                
-                element.textContent = current.toLocaleString();
-                
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                }
-            }
-            
-            update();
-        }
-
-        // Initialize counter on page load
-        initVisitorCounter();
     </script>
 </body>
 </html>
