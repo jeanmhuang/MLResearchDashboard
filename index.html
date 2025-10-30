@@ -90,12 +90,6 @@
             border-color: #667eea;
         }
 
-        .filter-select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-
         .search-btn {
             padding: 14px 35px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -111,10 +105,6 @@
         .search-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .search-btn:active {
-            transform: translateY(0);
         }
 
         /* Stats Bar */
@@ -419,7 +409,7 @@
 <body>
     <div class="header">
         <h1>ML Research Dashboard</h1>
-        <p class="subtitle">Discover the latest papers from ArXiv</p>
+        <p class="subtitle">Powered by Vercel Backend API</p>
     </div>
 
     <div class="container">
@@ -479,9 +469,8 @@
     </div>
 
     <script>
-        // Configuration
-        const USE_PROXY = true;  // Using CORS proxy (works reliably)
-        const PROXY_URL = 'https://api.allorigins.win/get';
+        // IMPORTANT: Using Vercel API endpoint
+        const API_ENDPOINT = '/api/arxiv'; // This will work on Vercel deployment
         
         let currentStart = 0;
         let currentQuery = '';
@@ -522,19 +511,29 @@
             }
             
             try {
-                // Build ArXiv query
-                const searchQuery = currentCategory === 'all' 
-                    ? currentQuery 
-                    : `${currentQuery} AND cat:${currentCategory}`;
+                // Build query parameters
+                const params = new URLSearchParams({
+                    query: currentQuery,
+                    category: currentCategory,
+                    start: currentStart.toString(),
+                    max_results: '20',
+                    sortBy: currentSort
+                });
                 
-                const arxivUrl = `http://export.arxiv.org/api/query?search_query=${encodeURIComponent(searchQuery)}&start=${currentStart}&max_results=20&sortBy=${currentSort}&sortOrder=descending`;
-                const proxyUrl = `${PROXY_URL}?url=${encodeURIComponent(arxivUrl)}`;
+                // Call Vercel API
+                const response = await fetch(`${API_ENDPOINT}?${params}`);
                 
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('Failed to fetch papers');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch papers');
+                }
                 
                 const data = await response.json();
-                const papers = parseArxivXML(data.contents);
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'API error');
+                }
+                
+                const papers = data.papers || [];
                 
                 if (papers.length > 0) {
                     displayPapers(papers, append);
@@ -551,11 +550,13 @@
                 }
                 
             } catch (error) {
+                console.error('Error fetching papers:', error);
                 if (!append) {
                     container.innerHTML = `
                         <div class="no-results">
                             <h3>Unable to load papers</h3>
-                            <p>Please try again in a moment</p>
+                            <p>Please make sure the API endpoint is deployed at /api/arxiv</p>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #999;">Error: ${error.message}</p>
                         </div>
                     `;
                 }
@@ -564,49 +565,6 @@
                 loading.style.display = 'none';
                 isLoading = false;
             }
-        }
-
-        function parseArxivXML(xmlText) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-            const entries = xmlDoc.getElementsByTagName('entry');
-            const papers = [];
-            
-            for (let entry of entries) {
-                const getTextContent = (tagName) => {
-                    const elem = entry.getElementsByTagName(tagName)[0];
-                    return elem ? elem.textContent.trim() : '';
-                };
-                
-                const getAuthors = () => {
-                    const authors = entry.getElementsByTagName('author');
-                    return Array.from(authors).map(a => 
-                        a.getElementsByTagName('name')[0].textContent
-                    );
-                };
-                
-                const getCategories = () => {
-                    const cats = entry.getElementsByTagName('category');
-                    return Array.from(cats).map(c => c.getAttribute('term'));
-                };
-                
-                const id = getTextContent('id');
-                const arxivId = id.split('/abs/')[1] || id.split('/').pop();
-                
-                papers.push({
-                    id: arxivId,
-                    title: getTextContent('title').replace(/\n/g, ' ').replace(/\s+/g, ' '),
-                    authors: getAuthors(),
-                    abstract: getTextContent('summary').replace(/\n/g, ' ').replace(/\s+/g, ' '),
-                    published: getTextContent('published').split('T')[0],
-                    updated: getTextContent('updated').split('T')[0],
-                    categories: getCategories(),
-                    pdfUrl: `https://arxiv.org/pdf/${arxivId}.pdf`,
-                    arxivUrl: `https://arxiv.org/abs/${arxivId}`
-                });
-            }
-            
-            return papers;
         }
 
         function displayPapers(papers, append = false) {
@@ -626,11 +584,12 @@
             const authors = paper.authors.slice(0, 3).join(', ') + 
                            (paper.authors.length > 3 ? ' et al.' : '');
             
-            const categories = paper.categories.slice(0, 3).map(cat => 
-                `<span class="category-tag" onclick="searchCategory(event, '${cat}')">${cat}</span>`
-            ).join('');
+            const categories = paper.categories ? 
+                paper.categories.slice(0, 3).map(cat => 
+                    `<span class="category-tag" onclick="searchCategory(event, '${cat}')">${cat}</span>`
+                ).join('') : '';
             
-            const displayDate = paper.published || paper.updated || 'Unknown date';
+            const displayDate = paper.published || 'Unknown date';
             
             return `
                 <div class="paper-card" onclick="openPaper('${paper.arxivUrl}')">
@@ -664,7 +623,7 @@
             
             // Get year range from papers
             const years = papers
-                .map(p => parseInt((p.published || p.updated || '2024').substring(0, 4)))
+                .map(p => parseInt((p.published || '2024').substring(0, 4)))
                 .filter(y => !isNaN(y));
             if (years.length > 0) {
                 const minYear = Math.min(...years);
