@@ -109,14 +109,15 @@
         }
 
         .feature-card {
-            padding: 15px;
+            padding: 15px 15px 35px 15px;
             background: linear-gradient(135deg, #F5F7FA 0%, #FFFFFF 100%);
             border-radius: 12px;
-            border: 1px solid var(--border);
+            border: 2px solid #E1E8ED;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            min-height: 110px;
         }
 
         .feature-card::before {
@@ -143,6 +144,63 @@
         .feature-card.active {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
+            border-color: var(--primary);
+        }
+
+        .feature-card.active .feature-status {
+            color: #90EE90;
+        }
+
+        /* Toggle indicator */
+        .feature-status {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .feature-card:not(.active) .feature-status {
+            background: rgba(0,0,0,0.05);
+            color: #999;
+        }
+
+        /* Toggle switch style indicator */
+        .feature-toggle {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .feature-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .feature-card.active .feature-toggle {
+            background: #90EE90;
+        }
+
+        .feature-card.active .feature-toggle::after {
+            transform: translateX(20px);
         }
 
         .feature-icon {
@@ -795,31 +853,44 @@
 
     <!-- Features Bar -->
     <div class="features-bar">
+        <div style="text-align: center; margin-bottom: 15px; color: #666; font-size: 0.9em;">
+            💡 <strong>Click to toggle features ON/OFF</strong> • Blue = Active
+        </div>
         <div class="features-grid">
-            <div class="feature-card active" onclick="toggleFeature('ai-summaries')">
+            <div class="feature-card active" onclick="toggleFeature('ai-summaries')" id="feature-ai-summaries">
+                <div class="feature-status">ON</div>
                 <div class="feature-icon">🤖</div>
                 <div class="feature-title">AI Summaries</div>
                 <div class="feature-desc">Plain English explanations</div>
+                <div class="feature-toggle"></div>
             </div>
-            <div class="feature-card" onclick="toggleFeature('personalized')">
+            <div class="feature-card active" onclick="toggleFeature('personalized')" id="feature-personalized">
+                <div class="feature-status">ON</div>
                 <div class="feature-icon">🎯</div>
                 <div class="feature-title">Personalized Feed</div>
                 <div class="feature-desc">Papers matched to you</div>
+                <div class="feature-toggle"></div>
             </div>
-            <div class="feature-card" onclick="toggleFeature('impact')">
+            <div class="feature-card active" onclick="toggleFeature('impact')" id="feature-impact">
+                <div class="feature-status">ON</div>
                 <div class="feature-icon">📊</div>
                 <div class="feature-title">Real Impact Metrics</div>
                 <div class="feature-desc">Beyond just citations</div>
+                <div class="feature-toggle"></div>
             </div>
-            <div class="feature-card" onclick="toggleFeature('lineage')">
+            <div class="feature-card active" onclick="toggleFeature('lineage')" id="feature-lineage">
+                <div class="feature-status">ON</div>
                 <div class="feature-icon">🔗</div>
                 <div class="feature-title">Research Lineage</div>
                 <div class="feature-desc">See paper evolution</div>
+                <div class="feature-toggle"></div>
             </div>
-            <div class="feature-card" onclick="toggleFeature('bookmarks')">
+            <div class="feature-card active" onclick="toggleFeature('bookmarks')" id="feature-bookmarks">
+                <div class="feature-status">ON</div>
                 <div class="feature-icon">📑</div>
                 <div class="feature-title">Smart Bookmarks</div>
                 <div class="feature-desc">Never lose a paper</div>
+                <div class="feature-toggle"></div>
             </div>
         </div>
     </div>
@@ -1376,21 +1447,21 @@
         }
 
         function toggleFeature(feature) {
-            const cards = document.querySelectorAll('.feature-card');
-            cards.forEach(card => {
-                if (card.onclick.toString().includes(feature)) {
-                    card.classList.toggle('active');
-                }
-            });
+            const card = document.getElementById(`feature-${feature}`);
+            const statusEl = card.querySelector('.feature-status');
+            
+            card.classList.toggle('active');
             
             const index = activeFeatures.indexOf(feature);
             if (index > -1) {
                 activeFeatures.splice(index, 1);
+                statusEl.textContent = 'OFF';
             } else {
                 activeFeatures.push(feature);
+                statusEl.textContent = 'ON';
             }
             
-            // Refresh papers display
+            // Don't refresh if no papers loaded yet
             const container = document.getElementById('papersContainer');
             if (container.children.length > 0) {
                 searchPapers();
