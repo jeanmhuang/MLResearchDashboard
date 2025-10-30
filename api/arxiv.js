@@ -1,7 +1,8 @@
+// api/arxiv.js - Vercel serverless function
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   if (req.method === 'OPTIONS') {
@@ -9,17 +10,6 @@ export default async function handler(req, res) {
   }
 
   const { query = '', category = 'cs.LG', start = '0', maxResults = '20' } = req.query;
-  const { action } = req.body || req.query;
-
-  // If specific action is requested
-  if (action) {
-    return res.status(200).json({
-      success: true,
-      message: `Action ${action} received - AI features coming soon`,
-      action: action,
-      note: "Add OpenAI API key in Vercel to enable AI features"
-    });
-  }
 
   try {
     // Build ArXiv query
@@ -55,8 +45,7 @@ export default async function handler(req, res) {
     console.error('Error fetching from ArXiv:', error);
     return res.status(500).json({
       success: false,
-      error: error.message,
-      message: "Error fetching papers. Please try again."
+      error: error.message
     });
   }
 }
@@ -112,13 +101,7 @@ function parseArxivXML(xmlText) {
       arxivId: id.split('/abs/')[1] || id,
       url: id.replace('http://', 'https://'),
       pdfUrl: pdfUrl ? pdfUrl.replace('http://', 'https://') : null,
-      categories,
-      // Add mock metrics for UI
-      metrics: {
-        citations: Math.floor(Math.random() * 1000),
-        githubStars: Math.floor(Math.random() * 500),
-        implementations: Math.floor(Math.random() * 20)
-      }
+      categories
     });
   });
   
