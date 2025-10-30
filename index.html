@@ -38,6 +38,38 @@
             font-size: 1.2em;
         }
 
+        /* API Switch */
+        .api-switch {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .switch-label {
+            color: #5a6c7d;
+            font-weight: 500;
+        }
+
+        .switch-btn {
+            padding: 8px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .switch-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
         /* Container */
         .container {
             max-width: 1400px;
@@ -100,32 +132,6 @@
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
 
-        /* Stats Bar */
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            color: #5a6c7d;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
         /* Papers Grid */
         .papers-grid {
             display: grid;
@@ -160,30 +166,12 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.12);
         }
 
-        .paper-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
         .paper-title {
             font-size: 1.2em;
             font-weight: 600;
             color: #2c3e50;
+            margin-bottom: 10px;
             line-height: 1.4;
-            flex: 1;
-            padding-right: 10px;
-        }
-
-        .paper-id {
-            background: #f0f4ff;
-            color: #667eea;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 500;
-            white-space: nowrap;
         }
 
         .paper-authors {
@@ -196,33 +184,11 @@
             color: #5a6c7d;
             line-height: 1.6;
             font-size: 0.95em;
+            margin-bottom: 15px;
             display: -webkit-box;
             -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .paper-categories {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .category-tag {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .category-tag:hover {
-            transform: scale(1.05);
         }
 
         .paper-footer {
@@ -258,7 +224,6 @@
 
         .pdf-link:hover {
             background: #c0392b;
-            transform: translateY(-2px);
         }
 
         .arxiv-link {
@@ -268,7 +233,6 @@
 
         .arxiv-link:hover {
             background: #2980b9;
-            transform: translateY(-2px);
         }
 
         /* Loading */
@@ -293,42 +257,23 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Load More */
-        .load-more-container {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .load-more-btn {
-            padding: 14px 40px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+        /* Status Message */
+        .status-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            margin-bottom: 20px;
         }
 
-        .load-more-btn:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-        }
-
-        /* No Results */
-        .no-results {
-            background: white;
-            padding: 60px;
-            border-radius: 12px;
-            text-align: center;
-            color: #5a6c7d;
-        }
-
-        .no-results h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
         /* Responsive */
@@ -341,26 +286,23 @@
                 grid-template-columns: 1fr;
             }
         }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .stats-bar {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>ML Research Dashboard</h1>
         <p class="subtitle">Browse the latest papers from ArXiv</p>
+        
+        <div class="api-switch">
+            <span class="switch-label">API Mode:</span>
+            <button class="switch-btn active" id="proxyBtn" onclick="switchAPI('proxy')">CORS Proxy (Works Now)</button>
+            <button class="switch-btn" id="vercelBtn" onclick="switchAPI('vercel')">Vercel API (Faster)</button>
+        </div>
     </div>
 
     <div class="container">
+        <div id="statusMessage"></div>
+        
         <div class="search-section">
             <div class="search-grid">
                 <input type="text" class="search-input" id="searchInput" 
@@ -371,9 +313,7 @@
                     <option value="cs.AI">Artificial Intelligence</option>
                     <option value="cs.CV">Computer Vision</option>
                     <option value="cs.CL">Computation & Language</option>
-                    <option value="cs.RO">Robotics</option>
-                    <option value="cs.NE">Neural Computing</option>
-                    <option value="stat.ML">Statistics ML</option>
+                    <option value="all">All Categories</option>
                 </select>
                 <select class="filter-select" id="sortFilter">
                     <option value="relevance">Relevance</option>
@@ -381,25 +321,6 @@
                     <option value="submittedDate">Submission Date</option>
                 </select>
                 <button class="search-btn" onclick="searchPapers()">Search</button>
-            </div>
-            
-            <div class="stats-bar">
-                <div class="stat">
-                    <div class="stat-value" id="totalPapers">0</div>
-                    <div class="stat-label">Papers Found</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="currentCategory">cs.LG</div>
-                    <div class="stat-label">Category</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="todayCount">0</div>
-                    <div class="stat-label">Today's Papers</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="pageNumber">1</div>
-                    <div class="stat-label">Page</div>
-                </div>
             </div>
         </div>
 
@@ -409,126 +330,114 @@
         </div>
 
         <div id="papersContainer" class="papers-grid"></div>
-
-        <div class="load-more-container" id="loadMoreContainer" style="display: none;">
-            <button class="load-more-btn" onclick="loadMore()">Load More Papers</button>
-        </div>
     </div>
 
     <script>
-        // Configuration - Change this when you deploy to Vercel
-        const API_ENDPOINT = 'https://ml-research-dashboard.vercel.app/'; // Default: CORS proxy
-        // After Vercel deployment, change to: 'https://your-app.vercel.app/api/arxiv'
-        const USE_VERCEL = true; // Change to true after deploying to Vercel
-
+        // API Configuration - Toggle between proxy and Vercel
+        let USE_PROXY = true;  // Start with proxy (always works)
+        const PROXY_URL = 'https://api.allorigins.win/get';
+        const VERCEL_API = 'https://ml-research-dashboard.vercel.app/api/arxiv';
+        
         let currentStart = 0;
         let currentQuery = '';
-        let currentCategory = 'cs.LG';
-        let currentSort = 'relevance';
-        let isLoading = false;
-        let currentPage = 1;
-
+        
         // Initialize
         window.onload = () => {
+            showStatus('Using CORS Proxy - This always works but may be slower', 'success');
             searchPapers();
         };
-
-        async function searchPapers() {
-            if (isLoading) return;
+        
+        function switchAPI(mode) {
+            USE_PROXY = (mode === 'proxy');
+            document.getElementById('proxyBtn').classList.toggle('active', USE_PROXY);
+            document.getElementById('vercelBtn').classList.toggle('active', !USE_PROXY);
             
-            currentQuery = document.getElementById('searchInput').value || 'machine learning';
-            currentCategory = document.getElementById('categoryFilter').value;
-            currentSort = document.getElementById('sortFilter').value;
-            currentStart = 0;
-            currentPage = 1;
+            if (USE_PROXY) {
+                showStatus('Switched to CORS Proxy - Always works but may be slower', 'success');
+            } else {
+                showStatus('Switched to Vercel API - Faster but requires proper setup', 'success');
+            }
             
-            document.getElementById('papersContainer').innerHTML = '';
-            await fetchPapers();
+            searchPapers();
         }
-
-        async function fetchPapers(append = false) {
-            isLoading = true;
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = type === 'error' ? 'error-message' : 'status-message';
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        async function searchPapers() {
+            const query = document.getElementById('searchInput').value || 'machine learning';
+            const category = document.getElementById('categoryFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            
+            currentQuery = query;
+            currentStart = 0;
             
             const loading = document.getElementById('loading');
             const container = document.getElementById('papersContainer');
-            const loadMoreContainer = document.getElementById('loadMoreContainer');
             
-            if (!append) {
-                loading.style.display = 'block';
-            }
+            loading.style.display = 'block';
+            container.innerHTML = '';
             
             try {
                 let papers;
                 
-                if (USE_VERCEL) {
-                    // Use Vercel backend
-                    const params = new URLSearchParams({
-                        query: currentQuery,
-                        category: currentCategory,
-                        start: currentStart,
-                        max_results: 20,
-                        sortBy: currentSort
-                    });
-                    
-                    const response = await fetch(`${API_ENDPOINT}?${params}`);
-                    const data = await response.json();
-                    papers = data.papers;
+                if (USE_PROXY) {
+                    papers = await fetchWithProxy(query, category, sort);
                 } else {
-                    // Use CORS proxy
-                    const arxivUrl = buildArxivUrl();
-                    const proxyUrl = `${API_ENDPOINT}?url=${encodeURIComponent(arxivUrl)}`;
-                    
-                    const response = await fetch(proxyUrl);
-                    const data = await response.json();
-                    papers = parseArxivXML(data.contents);
+                    papers = await fetchWithVercel(query, category, sort);
                 }
                 
-                if (papers.length > 0) {
-                    displayPapers(papers, append);
-                    updateStats(papers);
-                    loadMoreContainer.style.display = papers.length === 20 ? 'block' : 'none';
-                } else if (!append) {
-                    container.innerHTML = `
-                        <div class="no-results">
-                            <h3>No papers found</h3>
-                            <p>Try adjusting your search terms or category</p>
-                        </div>
-                    `;
-                    loadMoreContainer.style.display = 'none';
-                }
+                displayPapers(papers);
                 
             } catch (error) {
-                console.error('Error fetching papers:', error);
-                if (!append) {
-                    container.innerHTML = `
-                        <div class="no-results">
-                            <h3>Error loading papers</h3>
-                            <p>Please try again later or check your connection</p>
-                        </div>
-                    `;
-                }
+                console.error('Error:', error);
+                showStatus(`Error: ${error.message}. Try switching API mode.`, 'error');
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">Failed to load papers. Try the other API mode.</p>';
             } finally {
                 loading.style.display = 'none';
-                isLoading = false;
             }
         }
-
-        function buildArxivUrl() {
-            const searchQuery = currentCategory === 'all' 
-                ? currentQuery 
-                : `${currentQuery} AND cat:${currentCategory}`;
+        
+        async function fetchWithProxy(query, category, sort) {
+            const searchQuery = category === 'all' ? query : `${query} AND cat:${category}`;
+            const arxivUrl = `http://export.arxiv.org/api/query?search_query=${encodeURIComponent(searchQuery)}&start=0&max_results=20&sortBy=${sort}&sortOrder=descending`;
+            const proxyUrl = `${PROXY_URL}?url=${encodeURIComponent(arxivUrl)}`;
             
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error('Proxy request failed');
+            
+            const data = await response.json();
+            return parseArxivXML(data.contents);
+        }
+        
+        async function fetchWithVercel(query, category, sort) {
             const params = new URLSearchParams({
-                search_query: searchQuery,
-                start: currentStart,
-                max_results: 20,
-                sortBy: currentSort,
-                sortOrder: 'descending'
+                query: query,
+                category: category,
+                start: '0',
+                max_results: '20',
+                sortBy: sort
             });
             
-            return `http://export.arxiv.org/api/query?${params}`;
+            const response = await fetch(`${VERCEL_API}?${params}`);
+            if (!response.ok) {
+                throw new Error('Vercel API not configured. Use CORS Proxy mode instead.');
+            }
+            
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || 'API error');
+            
+            return data.papers;
         }
-
+        
         function parseArxivXML(xmlText) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
@@ -548,22 +457,15 @@
                     );
                 };
                 
-                const getCategories = () => {
-                    const cats = entry.getElementsByTagName('category');
-                    return Array.from(cats).map(c => c.getAttribute('term'));
-                };
-                
                 const id = getTextContent('id');
                 const arxivId = id.split('/abs/')[1] || id.split('/').pop();
                 
                 papers.push({
                     id: arxivId,
-                    title: getTextContent('title').replace(/\n/g, ' ').replace(/\s+/g, ' '),
+                    title: getTextContent('title').replace(/\s+/g, ' '),
                     authors: getAuthors(),
-                    abstract: getTextContent('summary').replace(/\n/g, ' ').replace(/\s+/g, ' '),
+                    abstract: getTextContent('summary').replace(/\s+/g, ' '),
                     published: getTextContent('published').split('T')[0],
-                    updated: getTextContent('updated').split('T')[0],
-                    categories: getCategories(),
                     pdfUrl: `https://arxiv.org/pdf/${arxivId}.pdf`,
                     arxivUrl: `https://arxiv.org/abs/${arxivId}`
                 });
@@ -571,82 +473,44 @@
             
             return papers;
         }
-
-        function displayPapers(papers, append = false) {
+        
+        function displayPapers(papers) {
             const container = document.getElementById('papersContainer');
             
-            if (!append) {
-                container.innerHTML = '';
+            if (papers.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No papers found</p>';
+                return;
             }
             
             papers.forEach(paper => {
-                const card = createPaperCard(paper);
-                container.innerHTML += card;
-            });
-        }
-
-        function createPaperCard(paper) {
-            const authors = paper.authors.slice(0, 3).join(', ') + 
-                           (paper.authors.length > 3 ? ' et al.' : '');
-            
-            const categories = paper.categories.slice(0, 3).map(cat => 
-                `<span class="category-tag" onclick="searchCategory('${cat}')">${cat}</span>`
-            ).join('');
-            
-            return `
-                <div class="paper-card" onclick="openPaper('${paper.arxivUrl}')">
-                    <div class="paper-header">
+                const authors = paper.authors ? 
+                    paper.authors.slice(0, 3).join(', ') + 
+                    (paper.authors.length > 3 ? ' et al.' : '') : 
+                    'Unknown';
+                
+                const abstract = paper.abstract && paper.abstract.length > 300 ? 
+                    paper.abstract.substring(0, 300) + '...' : 
+                    (paper.abstract || 'No abstract');
+                
+                container.innerHTML += `
+                    <div class="paper-card" onclick="window.open('${paper.arxivUrl}', '_blank')">
                         <h3 class="paper-title">${paper.title}</h3>
-                        <span class="paper-id">${paper.id}</span>
-                    </div>
-                    <p class="paper-authors">${authors}</p>
-                    <p class="paper-abstract">${paper.abstract}</p>
-                    <div class="paper-categories">${categories}</div>
-                    <div class="paper-footer">
-                        <span class="paper-date">${paper.published}</span>
-                        <div class="paper-links">
-                            <a href="${paper.pdfUrl}" class="paper-link pdf-link" 
-                               onclick="event.stopPropagation()" target="_blank">PDF</a>
-                            <a href="${paper.arxivUrl}" class="paper-link arxiv-link" 
-                               onclick="event.stopPropagation()" target="_blank">ArXiv</a>
+                        <p class="paper-authors">${authors}</p>
+                        <p class="paper-abstract">${abstract}</p>
+                        <div class="paper-footer">
+                            <span class="paper-date">${paper.published || 'Unknown date'}</span>
+                            <div class="paper-links">
+                                <a href="${paper.pdfUrl}" class="paper-link pdf-link" 
+                                   onclick="event.stopPropagation()" target="_blank">PDF</a>
+                                <a href="${paper.arxivUrl}" class="paper-link arxiv-link" 
+                                   onclick="event.stopPropagation()" target="_blank">ArXiv</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            });
         }
-
-        function updateStats(papers) {
-            const totalPapers = document.getElementById('totalPapers');
-            const currentCat = document.getElementById('currentCategory');
-            const todayCount = document.getElementById('todayCount');
-            const pageNum = document.getElementById('pageNumber');
-            
-            const currentTotal = parseInt(totalPapers.textContent) || 0;
-            totalPapers.textContent = currentTotal + papers.length;
-            currentCat.textContent = currentCategory;
-            pageNum.textContent = currentPage;
-            
-            const today = new Date().toISOString().split('T')[0];
-            const todayPapers = papers.filter(p => p.published === today).length;
-            todayCount.textContent = todayPapers;
-        }
-
-        async function loadMore() {
-            currentStart += 20;
-            currentPage += 1;
-            await fetchPapers(true);
-        }
-
-        function searchCategory(category) {
-            event.stopPropagation();
-            document.getElementById('categoryFilter').value = category;
-            searchPapers();
-        }
-
-        function openPaper(url) {
-            window.open(url, '_blank');
-        }
-
+        
         // Handle Enter key
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
