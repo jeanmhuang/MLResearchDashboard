@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Research Dashboard</title>
+    <title>ML Research Dashboard - ArXiv Papers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .paper-card {
@@ -31,7 +31,8 @@
                         <span class="ml-3 text-sm text-gray-500">Real-time ArXiv papers</span>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span id="paperCount" class="text-sm text-gray-600">Loading...</span>
+                        <span id="paperCount" class="text-sm text-gray-600">Ready</span>
+                        <span id="apiStatus" class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hidden">API Connected</span>
                         <button onclick="location.reload()" class="p-2 text-gray-600 hover:text-gray-900">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -43,6 +44,21 @@
         </header>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- API Configuration Notice -->
+            <div id="setupNotice" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 class="font-semibold text-yellow-800 mb-2">⚠️ Setup Required</h3>
+                <p class="text-sm text-yellow-700 mb-2">This dashboard needs to be deployed on Vercel to work properly. If you're seeing this message, the ArXiv API integration is not configured.</p>
+                <details class="text-sm text-yellow-700">
+                    <summary class="cursor-pointer font-medium">Click for setup instructions</summary>
+                    <ol class="mt-2 ml-4 list-decimal space-y-1">
+                        <li>Deploy this project to Vercel</li>
+                        <li>The api/arxiv.js file will handle ArXiv requests</li>
+                        <li>Update the API_BASE_URL in this file to your Vercel URL</li>
+                        <li>Papers will load automatically from ArXiv</li>
+                    </ol>
+                </details>
+            </div>
+
             <!-- Search and Filters -->
             <div class="mb-8">
                 <div class="flex flex-col sm:flex-row gap-4">
@@ -88,17 +104,17 @@
             <!-- Error Message -->
             <div id="errorMessage" class="mb-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
 
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden flex justify-center items-center py-12">
+                <div class="text-center">
+                    <div class="loading text-4xl mb-2">🔍</div>
+                    <p class="text-gray-600">Fetching papers from ArXiv...</p>
+                </div>
+            </div>
+
             <!-- Papers Grid -->
             <div id="papersContainer" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <!-- Papers will be loaded here -->
-            </div>
-
-            <!-- Loading Indicator -->
-            <div id="loadingIndicator" class="flex justify-center items-center py-12">
-                <div class="text-center">
-                    <div class="loading text-4xl mb-2">🔍</div>
-                    <p class="text-gray-600">Loading papers from ArXiv...</p>
-                </div>
             </div>
 
             <!-- Load More Button -->
@@ -114,13 +130,15 @@
     </div>
 
     <script>
+        // IMPORTANT: Update this to your Vercel deployment URL
+        // For local testing, use: http://localhost:3000
+        // For production, use: https://your-app-name.vercel.app
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000' 
+            : window.location.origin;
+
         let currentStart = 0;
         let currentQuery = '';
-        let savedPapers = JSON.parse(localStorage.getItem('savedPapers') || '[]');
-
-        // Use CORS proxy to access ArXiv API
-        const CORS_PROXY = 'https://corsproxy.io/?';
-        const ARXIV_API = 'http://export.arxiv.org/api/query';
 
         function showStatus(message) {
             const status = document.getElementById('statusMessage');
@@ -139,51 +157,79 @@
         async function fetchPapers(query = '', start = 0) {
             try {
                 const category = document.getElementById('categoryFilter').value;
-                const searchQuery = query 
-                    ? `all:${query} AND cat:${category}`
-                    : `cat:${category}`;
-                
-                const url = `${CORS_PROXY}${ARXIV_API}?search_query=${encodeURIComponent(searchQuery)}&start=${start}&max_results=12&sortBy=lastUpdatedDate&sortOrder=descending`;
-                
+                const params = new URLSearchParams({
+                    query: query,
+                    category: category,
+                    start: start,
+                    maxResults: 20
+                });
+
+                const url = `${API_BASE_URL}/api/arxiv?${params}`;
                 console.log('Fetching from:', url);
                 
                 const response = await fetch(url);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // If API is not available, show setup notice
+                    document.getElementById('setupNotice').classList.remove('hidden');
+                    throw new Error(`API not configured (${response.status})`);
                 }
                 
-                const text = await response.text();
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(text, 'text/xml');
+                const data = await response.json();
                 
-                const entries = xml.querySelectorAll('entry');
-                const papers = [];
+                if (data.success) {
+                    document.getElementById('setupNotice').classList.add('hidden');
+                    document.getElementById('apiStatus').classList.remove('hidden');
+                    return data.papers;
+                } else {
+                    throw new Error(data.error || 'Failed to fetch papers');
+                }
                 
-                entries.forEach(entry => {
-                    const title = entry.querySelector('title')?.textContent?.trim() || 'No title';
-                    const summary = entry.querySelector('summary')?.textContent?.trim() || 'No summary';
-                    const authors = Array.from(entry.querySelectorAll('author name')).map(a => a.textContent).slice(0, 3);
-                    const published = entry.querySelector('published')?.textContent?.split('T')[0] || '';
-                    const link = entry.querySelector('id')?.textContent || '#';
-                    const categories = Array.from(entry.querySelectorAll('category')).map(c => c.getAttribute('term'));
-                    
-                    papers.push({
-                        title,
-                        summary: summary.substring(0, 200) + '...',
-                        authors: authors.join(', ') + (authors.length > 3 ? ' et al.' : ''),
-                        date: published,
-                        link: link.replace('http://', 'https://'),
-                        categories: categories.slice(0, 3)
-                    });
-                });
-                
-                return papers;
             } catch (error) {
                 console.error('Error fetching papers:', error);
-                showError('Failed to fetch papers. The CORS proxy might be down. Try again later.');
-                return [];
+                
+                // If API fails, return demo papers and show setup notice
+                if (error.message.includes('Failed to fetch') || error.message.includes('404')) {
+                    showError('ArXiv API not configured. Showing demo papers. Please deploy to Vercel for real data.');
+                    return getDemoPapers();
+                } else {
+                    showError(`Error: ${error.message}`);
+                    return [];
+                }
             }
+        }
+
+        function getDemoPapers() {
+            // Demo papers for when API is not available
+            return [
+                {
+                    title: "Attention Is All You Need",
+                    abstract: "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms...",
+                    authors: "Vaswani et al.",
+                    published: "2017-06-12",
+                    url: "https://arxiv.org/abs/1706.03762",
+                    pdfUrl: "https://arxiv.org/pdf/1706.03762.pdf",
+                    categories: ["cs.CL", "cs.LG"]
+                },
+                {
+                    title: "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+                    abstract: "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language representation models, BERT is designed to pre-train deep bidirectional representations from unlabeled text...",
+                    authors: "Devlin et al.",
+                    published: "2018-10-11",
+                    url: "https://arxiv.org/abs/1810.04805",
+                    pdfUrl: "https://arxiv.org/pdf/1810.04805.pdf",
+                    categories: ["cs.CL"]
+                },
+                {
+                    title: "Generative Adversarial Networks",
+                    abstract: "We propose a new framework for estimating generative models via an adversarial process, in which we simultaneously train two models: a generative model G that captures the data distribution, and a discriminative model D that estimates the probability...",
+                    authors: "Goodfellow et al.",
+                    published: "2014-06-10",
+                    url: "https://arxiv.org/abs/1406.2661",
+                    pdfUrl: "https://arxiv.org/pdf/1406.2661.pdf",
+                    categories: ["stat.ML", "cs.LG"]
+                }
+            ];
         }
 
         function renderPapers(papers, append = false) {
@@ -205,50 +251,40 @@
                 const paperCard = document.createElement('div');
                 paperCard.className = 'paper-card bg-white rounded-lg shadow-md p-6 hover:shadow-xl';
                 
-                const isSaved = savedPapers.some(p => p.link === paper.link);
-                
                 paperCard.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <h3 class="text-lg font-semibold text-gray-900 flex-1 mr-2">${paper.title}</h3>
-                        <button onclick="toggleSave('${paper.link}')" class="text-gray-400 hover:text-yellow-500">
-                            ${isSaved ? '⭐' : '☆'}
-                        </button>
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-900">${paper.title}</h3>
                     </div>
                     <p class="text-sm text-gray-600 mb-2">By ${paper.authors}</p>
-                    <p class="text-sm text-gray-500 mb-3">${paper.date}</p>
-                    <p class="text-gray-700 mb-4">${paper.summary}</p>
+                    <p class="text-sm text-gray-500 mb-3">${paper.published}</p>
+                    <p class="text-gray-700 mb-4">${paper.abstract}</p>
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${paper.categories.map(cat => `
                             <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">${cat}</span>
                         `).join('')}
                     </div>
-                    <a href="${paper.link}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        View on ArXiv →
-                    </a>
+                    <div class="flex gap-4">
+                        <a href="${paper.url}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View on ArXiv →
+                        </a>
+                        ${paper.pdfUrl ? `
+                            <a href="${paper.pdfUrl}" target="_blank" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                PDF →
+                            </a>
+                        ` : ''}
+                    </div>
                 `;
                 
                 container.appendChild(paperCard);
             });
             
-            document.getElementById('paperCount').textContent = `${container.children.length} papers loaded`;
+            document.getElementById('paperCount').textContent = `${container.children.length} papers`;
             
-            if (papers.length === 12) {
+            if (papers.length === 20) {
                 document.getElementById('loadMoreContainer').classList.remove('hidden');
             } else {
                 document.getElementById('loadMoreContainer').classList.add('hidden');
             }
-        }
-
-        function toggleSave(link) {
-            const paperIndex = savedPapers.findIndex(p => p.link === link);
-            if (paperIndex > -1) {
-                savedPapers.splice(paperIndex, 1);
-            } else {
-                // Find the paper data (simplified version)
-                savedPapers.push({ link });
-            }
-            localStorage.setItem('savedPapers', JSON.stringify(savedPapers));
-            searchPapers(); // Re-render
         }
 
         async function searchPapers() {
@@ -268,7 +304,8 @@
         }
 
         async function loadMore() {
-            currentStart += 12;
+            currentStart += 20;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
             const papers = await fetchPapers(currentQuery, currentStart);
             renderPapers(papers, true);
         }
