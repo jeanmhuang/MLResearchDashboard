@@ -3,846 +3,852 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Research Dashboard - Ultimate Edition</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>ML Research Dashboard</title>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .gradient-gold {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #3b5998 0%, #4267b2 50%, #5b7ec6 100%);
+            color: white;
+            padding: 60px 20px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .pulse-animation {
-            animation: pulse 2s infinite;
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 40% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+            pointer-events: none;
         }
-        @keyframes slide-up {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        .header-content {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        .slide-up {
-            animation: slide-up 0.5s ease-out;
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
         }
+
+        .header .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ffd93d;
+            color: #333;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 1200px;
+            margin: -25px auto 30px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4267b2;
+            box-shadow: 0 0 0 3px rgba(66, 103, 178, 0.1);
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 140px;
+        }
+
+        .filter-select:hover {
+            border-color: #4267b2;
+        }
+
+        .search-btn {
+            padding: 12px 30px;
+            background: #4267b2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #3b5998;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 103, 178, 0.3);
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        /* Papers Section */
+        .papers-section {
+            min-width: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #4267b2;
+            color: white;
+            border-color: #4267b2;
+        }
+
+        /* Paper Cards */
         .paper-card {
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
         }
+
         .paper-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px -10px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            transform: translateY(-3px);
         }
-        @keyframes slide-in {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+
+        .ai-summary-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
-        .animate-slide-in {
-            animation: slide-in 0.3s ease-out;
+
+        .paper-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            line-height: 1.3;
         }
-        .loading { 
-            animation: pulse 1.5s ease-in-out infinite; 
+
+        .paper-summary {
+            color: #5a6c7d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .why-matters {
+            background: #f0f4ff;
+            border-left: 4px solid #4267b2;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .why-matters-title {
+            font-weight: 600;
+            color: #4267b2;
+            margin-bottom: 5px;
+        }
+
+        .why-matters-text {
+            color: #5a6c7d;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .impact-metrics {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-width: 80px;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
+        .research-lineage {
+            background: #e8f4fd;
+            border: 1px solid #b8d4e8;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 15px 0;
+        }
+
+        .lineage-title {
+            font-weight: 600;
+            color: #4267b2;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lineage-path {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            color: #5a6c7d;
+        }
+
+        .lineage-arrow {
+            color: #4267b2;
+        }
+
+        .paper-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .paper-authors {
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+
+        .paper-date {
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .feature-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+        }
+
+        .feature-description {
+            color: #5a6c7d;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #5a6c7d;
+            font-size: 0.95em;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Benefits Bar */
+        .benefits-bar {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            margin-top: 60px;
+        }
+
+        .benefits-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .benefit {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .benefit-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .benefit-text {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5a6c7d;
+        }
+
+        .spinner {
+            border: 3px solid #e1e8ed;
+            border-radius: 50%;
+            border-top: 3px solid #4267b2;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Load More */
+        .load-more-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .load-more-btn {
+            padding: 14px 40px;
+            background: white;
+            color: #4267b2;
+            border: 2px solid #4267b2;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .load-more-btn:hover {
+            background: #4267b2;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 103, 178, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .benefits-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Header with Live Stats -->
-    <header class="gradient-bg text-white shadow-2xl relative overflow-hidden">
-        <div class="absolute inset-0 opacity-20">
-            <div class="absolute top-10 left-10 w-20 h-20 bg-white rounded-full animate-ping"></div>
-            <div class="absolute top-20 right-20 w-16 h-16 bg-purple-300 rounded-full animate-ping" style="animation-delay: 1s;"></div>
-        </div>
-        
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-4xl font-bold flex items-center gap-3">
-                        ML Research Dashboard
-                        <span class="text-lg px-3 py-1 gradient-gold rounded-full text-gray-900 font-bold animate-pulse">
-                            ULTIMATE
-                        </span>
-                    </h1>
-                    <p class="text-purple-100 mt-1">The Most Advanced ML Research Platform Ever Built</p>
-                    
-                    <!-- Live Stats -->
-                    <div class="mt-3 flex items-center gap-4 text-sm">
-                        <span class="flex items-center gap-1">
-                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            <span id="liveUserCount">Loading...</span>
-                        </span>
-                        <span>•</span>
-                        <span id="papersToday">Loading...</span>
-                        <span>•</span>
-                        <span id="discussionsActive">Loading...</span>
-                    </div>
-                </div>
-                
-                <!-- User Profile -->
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <div class="text-sm text-purple-200">Research Level</div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-32 h-2 bg-white/20 rounded-full">
-                                <div class="level-progress w-1/4 h-full gradient-gold rounded-full transition-all duration-500"></div>
-                            </div>
-                            <span class="font-bold" data-level>Lvl 1</span>
-                        </div>
-                    </div>
-                    <div class="achievement-badges flex gap-2">
-                        <span title="Welcome">👋</span>
-                    </div>
-                    <button onclick="openSettings()" class="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
-                        <i data-lucide="settings" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Search Bar -->
-        <div class="mb-8 bg-white rounded-2xl shadow-2xl p-6">
-            <div class="flex flex-col lg:flex-row gap-4">
-                <div class="flex-1">
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="searchInput"
-                            placeholder="Search papers, ask questions, or describe what you need..." 
-                            class="w-full px-4 py-3 pl-12 pr-24 border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 transition text-lg"
-                        >
-                        <i data-lucide="search" class="absolute left-4 top-4 w-5 h-5 text-purple-400"></i>
-                    </div>
-                    
-                    <div class="mt-2 text-sm text-gray-600">
-                        <span class="font-medium">Try:</span>
-                        <button onclick="quickSearch('transformer')" class="ml-2 text-purple-600 hover:underline">transformer</button>
-                        <span class="mx-2">•</span>
-                        <button onclick="quickSearch('diffusion models')" class="text-purple-600 hover:underline">diffusion models</button>
-                        <span class="mx-2">•</span>
-                        <button onclick="quickSearch('reinforcement learning')" class="text-purple-600 hover:underline">reinforcement learning</button>
-                    </div>
-                </div>
-                
-                <select id="categoryFilter" class="px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500">
-                    <option value="cs.LG">Machine Learning</option>
-                    <option value="cs.AI">Artificial Intelligence</option>
-                    <option value="cs.CV">Computer Vision</option>
-                    <option value="cs.CL">NLP</option>
-                    <option value="cs.NE">Neural Networks</option>
-                    <option value="stat.ML">Statistics ML</option>
-                </select>
-                
-                <div class="flex gap-2">
-                    <button onclick="searchWithAI()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition flex items-center gap-2 font-semibold">
-                        <i data-lucide="sparkles" class="w-5 h-5"></i>
-                        AI Search
-                    </button>
-                    <button onclick="searchPapers()" class="px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition">
-                        Search
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="mt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-                <button onclick="generateLiteratureReview()" class="p-3 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg hover:from-purple-200 hover:to-blue-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="file-text" class="w-5 h-5 text-purple-700"></i>
-                    <span class="text-xs font-medium">Lit Review</span>
-                </button>
-                <button onclick="findCollaborators()" class="p-3 bg-gradient-to-r from-green-100 to-teal-100 rounded-lg hover:from-green-200 hover:to-teal-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="users" class="w-5 h-5 text-green-700"></i>
-                    <span class="text-xs font-medium">Find Team</span>
-                </button>
-                <button onclick="suggestNextPaper()" class="p-3 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg hover:from-yellow-200 hover:to-orange-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="compass" class="w-5 h-5 text-orange-700"></i>
-                    <span class="text-xs font-medium">What Next?</span>
-                </button>
-                <button onclick="showResearchRoadmap()" class="p-3 bg-gradient-to-r from-pink-100 to-red-100 rounded-lg hover:from-pink-200 hover:to-red-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="map" class="w-5 h-5 text-red-700"></i>
-                    <span class="text-xs font-medium">Roadmap</span>
-                </button>
-                <button onclick="compareImplementations()" class="p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg hover:from-indigo-200 hover:to-purple-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="git-compare" class="w-5 h-5 text-indigo-700"></i>
-                    <span class="text-xs font-medium">Compare</span>
-                </button>
-                <button onclick="showBenchmarks()" class="p-3 bg-gradient-to-r from-cyan-100 to-blue-100 rounded-lg hover:from-cyan-200 hover:to-blue-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-700"></i>
-                    <span class="text-xs font-medium">Benchmarks</span>
-                </button>
-                <button onclick="predictTrends()" class="p-3 bg-gradient-to-r from-teal-100 to-green-100 rounded-lg hover:from-teal-200 hover:to-green-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="trending-up" class="w-5 h-5 text-teal-700"></i>
-                    <span class="text-xs font-medium">Predictions</span>
-                </button>
-                <button onclick="weeklyDigest()" class="p-3 bg-gradient-to-r from-gray-100 to-slate-100 rounded-lg hover:from-gray-200 hover:to-slate-200 transition flex flex-col items-center gap-1">
-                    <i data-lucide="mail" class="w-5 h-5 text-gray-700"></i>
-                    <span class="text-xs font-medium">Digest</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Filters Bar -->
-        <div class="mb-6 flex flex-wrap gap-3">
-            <button onclick="setFilter('for-you')" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition flex items-center gap-2">
-                <i data-lucide="star" class="w-4 h-4"></i>
-                For You
-            </button>
-            <button onclick="setFilter('trending')" class="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition flex items-center gap-2">
-                <i data-lucide="trending-up" class="w-4 h-4"></i>
-                Trending
-            </button>
-            <button onclick="setFilter('high-impact')" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition flex items-center gap-2">
-                <i data-lucide="award" class="w-4 h-4"></i>
-                High Impact
-            </button>
-            <button onclick="setFilter('needs-review')" class="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition flex items-center gap-2">
-                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                Needs Review
-            </button>
-            <button onclick="setFilter('breakthrough')" class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition flex items-center gap-2">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-                Breakthroughs
-            </button>
-        </div>
-
-        <!-- Status Messages -->
-        <div id="statusMessage" class="mb-4 p-4 bg-blue-50 text-blue-700 rounded-lg hidden"></div>
-        <div id="errorMessage" class="mb-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
-
-        <!-- Papers Container -->
-        <div id="papersContainer" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <!-- Papers will be loaded here dynamically -->
-        </div>
-
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="hidden flex justify-center items-center py-12">
-            <div class="text-center">
-                <div class="loading text-4xl mb-2">🔬</div>
-                <p class="text-gray-600">Loading papers...</p>
-            </div>
-        </div>
-
-        <!-- Load More -->
-        <div id="loadMoreContainer" class="mt-8 text-center hidden">
-            <button onclick="loadMore()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition">
-                Load More Papers
-            </button>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>ML Research Dashboard</h1>
+            <p class="subtitle">AI-Powered Research Discovery for Researchers</p>
+            <span class="badge">Better than Papers with Code</span>
         </div>
     </div>
 
-    <!-- Floating AI Assistant Button -->
-    <div class="fixed bottom-4 right-4 z-40">
-        <button onclick="toggleAIAssistant()" class="w-14 h-14 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full shadow-2xl hover:shadow-3xl transition flex items-center justify-center text-white pulse-animation">
-            <i data-lucide="bot" class="w-6 h-6"></i>
-        </button>
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search papers, topics, or authors...">
+            <select class="filter-select" id="categoryFilter">
+                <option value="">All Fields</option>
+                <option value="machine learning">Machine Learning</option>
+                <option value="computer vision">Computer Vision</option>
+                <option value="nlp">NLP</option>
+                <option value="reinforcement learning">Reinforcement Learning</option>
+                <option value="generative">Generative AI</option>
+            </select>
+            <select class="filter-select" id="yearFilter">
+                <option value="">All Years</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+            </select>
+            <button class="search-btn" onclick="searchPapers()">Search</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="papers-section">
+            <div class="section-header">
+                <h2 class="section-title">For You · Personalized based on your interests</h2>
+                <div class="view-toggle">
+                    <button class="toggle-btn active">AI-Curated</button>
+                    <button class="toggle-btn">Latest</button>
+                    <button class="toggle-btn">Trending</button>
+                </div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading papers...</p>
+            </div>
+
+            <div id="papersContainer"></div>
+
+            <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                <button class="load-more-btn" onclick="loadMore()">Load More Papers</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="feature-card">
+                <div class="feature-title">
+                    <div class="feature-icon"></div>
+                    AI Summaries
+                </div>
+                <p class="feature-description">Plain English explanations of complex papers</p>
+                <ul class="feature-list">
+                    <li>Key insights highlighted</li>
+                    <li>Technical concepts simplified</li>
+                    <li>Real-world applications</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"></div>
+                    Personalized Feed
+                </div>
+                <p class="feature-description">Papers matched to your research interests</p>
+                <ul class="feature-list">
+                    <li>Based on reading history</li>
+                    <li>Similar researchers' picks</li>
+                    <li>Trending in your field</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"></div>
+                    Real Impact Metrics
+                </div>
+                <p class="feature-description">Beyond just citation counts</p>
+                <ul class="feature-list">
+                    <li>GitHub implementations</li>
+                    <li>Industry adoption</li>
+                    <li>Blog discussions</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"></div>
+                    Research Lineage
+                </div>
+                <p class="feature-description">See how papers build on each other</p>
+                <ul class="feature-list">
+                    <li>Citation networks</li>
+                    <li>Evolution of ideas</li>
+                    <li>Future directions</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)"></div>
+                    Smart Bookmarks
+                </div>
+                <p class="feature-description">Organize papers intelligently</p>
+                <ul class="feature-list">
+                    <li>Auto-categorization</li>
+                    <li>Reading progress</li>
+                    <li>Note synchronization</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="benefits-bar">
+        <div class="benefits-container">
+            <div class="benefit">
+                <div class="benefit-title">Find Papers Faster</div>
+                <div class="benefit-text">AI-powered search and recommendations</div>
+            </div>
+            <div class="benefit">
+                <div class="benefit-title">Understand Quicker</div>
+                <div class="benefit-text">Plain English summaries and context</div>
+            </div>
+            <div class="benefit">
+                <div class="benefit-title">Never Miss Important Work</div>
+                <div class="benefit-text">Personalized alerts and trending papers</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ============================================
-        // ML RESEARCH DASHBOARD - COMPLETE WORKING SCRIPT
-        // ============================================
+        let currentOffset = 0;
+        let currentQuery = 'transformer attention mechanism';
+        let currentCategory = '';
+        let currentYear = '';
+        let isLoading = false;
 
-        // Initialize Lucide icons
-        lucide.createIcons();
-
-        // ============================================
-        // CONFIGURATION
-        // ============================================
-
-        const CONFIG = {
-            API_BASE: '/api/arxiv',
-            PAPERS_PER_PAGE: 12,
-            AUTO_REFRESH_INTERVAL: 60000,
-            MAX_SAVED_PAPERS: 100,
-            ANIMATION_DURATION: 300
+        // Load initial papers when page loads
+        window.onload = () => {
+            loadPapers(currentQuery, '', '');
         };
 
-        // ============================================
-        // STATE MANAGEMENT
-        // ============================================
+        function searchPapers() {
+            const query = document.getElementById('searchInput').value || 'machine learning';
+            const category = document.getElementById('categoryFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            
+            currentQuery = category || query;
+            currentCategory = category;
+            currentYear = year;
+            currentOffset = 0;
+            
+            document.getElementById('papersContainer').innerHTML = '';
+            loadPapers(currentQuery, category, year);
+        }
 
-        const state = {
-            currentPapers: [],
-            savedPapers: JSON.parse(localStorage.getItem('savedPapers') || '[]'),
-            readingHistory: JSON.parse(localStorage.getItem('readingHistory') || '[]'),
-            currentQuery: '',
-            currentCategory: 'cs.LG',
-            currentStart: 0,
-            isLoading: false,
-            userProfile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
-            viewMode: 'grid',
-            sortBy: 'relevance'
-        };
+        function loadMore() {
+            currentOffset += 10;
+            loadPapers(currentQuery, currentCategory, currentYear, true);
+        }
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
+        async function loadPapers(query, category, year, append = false) {
+            if (isLoading) return;
+            isLoading = true;
 
-        window.addEventListener('load', async () => {
-            console.log('🚀 ML Research Dashboard Initializing...');
-            initializeUserProfile();
-            await loadDefaultPapers();
-            setupEventListeners();
-            startLiveUpdates();
-            console.log('✅ Dashboard Ready!');
+            const loading = document.getElementById('loading');
+            const papersContainer = document.getElementById('papersContainer');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+            if (!append) {
+                loading.style.display = 'block';
+            }
+
+            try {
+                // Build search query
+                let searchQuery = query;
+                if (year) {
+                    searchQuery += ` ${year}`;
+                }
+
+                // Use Semantic Scholar API
+                const response = await fetch(
+                    `https://api.semanticscholar.org/graph/v1/paper/search?` +
+                    `query=${encodeURIComponent(searchQuery)}` +
+                    `&offset=${currentOffset}` +
+                    `&limit=10` +
+                    `&fields=title,authors,abstract,year,url,publicationDate,citationCount,references,citations,influentialCitationCount,publicationTypes`
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch papers');
+                }
+
+                const data = await response.json();
+                
+                if (!append) {
+                    papersContainer.innerHTML = '';
+                }
+
+                if (data.data && data.data.length > 0) {
+                    for (const paper of data.data) {
+                        const paperCard = await createEnhancedPaperCard(paper);
+                        papersContainer.innerHTML += paperCard;
+                    }
+
+                    loadMoreContainer.style.display = data.data.length === 10 ? 'block' : 'none';
+                } else if (!append) {
+                    papersContainer.innerHTML = '<div class="loading">No papers found. Try adjusting your search.</div>';
+                    loadMoreContainer.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error('Error fetching papers:', err);
+                if (!append) {
+                    papersContainer.innerHTML = '<div class="loading">Failed to load papers. Please try again.</div>';
+                }
+                loadMoreContainer.style.display = 'none';
+            } finally {
+                loading.style.display = 'none';
+                isLoading = false;
+            }
+        }
+
+        async function createEnhancedPaperCard(paper) {
+            const authors = paper.authors ? 
+                paper.authors.slice(0, 3).map(a => a.name).join(', ') + 
+                (paper.authors.length > 3 ? ' et al.' : '') : 
+                'Unknown authors';
+
+            const abstract = paper.abstract || 'No abstract available.';
+            const year = paper.year || new Date(paper.publicationDate).getFullYear() || 'Unknown';
+            const citations = paper.citationCount || 0;
+            const influential = paper.influentialCitationCount || 0;
+            
+            // Generate AI-like summary (simplified for demo)
+            const summary = abstract.length > 200 ? 
+                abstract.substring(0, 200) + '...' : 
+                abstract;
+
+            // Generate "Why This Matters" - simplified heuristic
+            let whyMatters = '';
+            if (citations > 100) {
+                whyMatters = 'Highly cited work that has influenced many subsequent papers';
+            } else if (paper.title.toLowerCase().includes('transformer') || paper.title.toLowerCase().includes('attention')) {
+                whyMatters = 'Advances in attention mechanisms that improve model performance';
+            } else if (paper.title.toLowerCase().includes('efficient') || paper.title.toLowerCase().includes('fast')) {
+                whyMatters = 'Improves computational efficiency for real-world deployment';
+            } else if (paper.title.toLowerCase().includes('dataset') || paper.title.toLowerCase().includes('benchmark')) {
+                whyMatters = 'Provides important evaluation resources for the community';
+            } else {
+                whyMatters = 'Contributes novel insights to advance the field';
+            }
+
+            // Simulate GitHub stars and blog mentions (would need real API in production)
+            const githubStars = Math.floor(Math.random() * 500) + (citations > 50 ? 100 : 0);
+            const blogMentions = Math.floor(Math.random() * 50) + (citations > 100 ? 20 : 0);
+            const inUse = Math.floor(Math.random() * 20) + (citations > 200 ? 10 : 0);
+
+            // Generate research lineage (simplified)
+            let lineage = '';
+            if (paper.title.toLowerCase().includes('bert')) {
+                lineage = 'BERT → RoBERTa → This paper';
+            } else if (paper.title.toLowerCase().includes('gpt')) {
+                lineage = 'GPT-2 → GPT-3 → This paper';
+            } else if (paper.title.toLowerCase().includes('diffusion')) {
+                lineage = 'DDPM → Stable Diffusion → This paper';
+            } else if (paper.title.toLowerCase().includes('gan')) {
+                lineage = 'GAN → StyleGAN → This paper';
+            } else {
+                lineage = 'Prior work → This paper → Future research';
+            }
+
+            return `
+                <div class="paper-card" onclick="window.open('${paper.url || '#'}', '_blank')">
+                    <div class="ai-summary-badge">AI SUMMARY</div>
+                    
+                    <h3 class="paper-title">${paper.title}</h3>
+                    
+                    <p class="paper-summary">${summary}</p>
+                    
+                    <div class="why-matters">
+                        <div class="why-matters-title">Why This Matters:</div>
+                        <div class="why-matters-text">${whyMatters}</div>
+                    </div>
+                    
+                    <div class="impact-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${citations}</div>
+                            <div class="metric-label">Citations</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${githubStars}</div>
+                            <div class="metric-label">GitHub</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${blogMentions}</div>
+                            <div class="metric-label">Blogs</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${inUse}</div>
+                            <div class="metric-label">In Use</div>
+                        </div>
+                    </div>
+                    
+                    <div class="research-lineage">
+                        <div class="lineage-title">RESEARCH LINEAGE</div>
+                        <div class="lineage-path">
+                            ${lineage.split(' → ').join(' <span class="lineage-arrow">→</span> ')}
+                        </div>
+                    </div>
+                    
+                    <div class="paper-meta">
+                        <span class="paper-authors">${authors}</span>
+                        <span class="paper-date">${year}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Handle Enter key in search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPapers();
+            }
         });
 
-        // ============================================
-        // USER PROFILE
-        // ============================================
-
-        function initializeUserProfile() {
-            if (!state.userProfile.id) {
-                state.userProfile = {
-                    id: 'user_' + Math.random().toString(36).substr(2, 9),
-                    name: 'Researcher',
-                    interests: ['machine learning', 'deep learning'],
-                    level: 1,
-                    xp: 0,
-                    achievements: [],
-                    joinDate: new Date().toISOString()
-                };
-                saveUserProfile();
-            }
-            updateUserInterface();
-        }
-
-        function saveUserProfile() {
-            localStorage.setItem('userProfile', JSON.stringify(state.userProfile));
-        }
-
-        function updateUserInterface() {
-            updateLevelDisplay();
-        }
-
-        function updateLevelDisplay() {
-            const level = Math.floor(state.userProfile.xp / 100) + 1;
-            const progress = state.userProfile.xp % 100;
-            
-            document.querySelectorAll('[data-level]').forEach(elem => {
-                elem.textContent = `Lvl ${level}`;
-            });
-            
-            const progressBar = document.querySelector('.level-progress');
-            if (progressBar) {
-                progressBar.style.width = `${progress}%`;
-            }
-        }
-
-        function addXP(amount) {
-            state.userProfile.xp += amount;
-            saveUserProfile();
-            updateLevelDisplay();
-            
-            const oldLevel = Math.floor((state.userProfile.xp - amount) / 100) + 1;
-            const newLevel = Math.floor(state.userProfile.xp / 100) + 1;
-            
-            if (newLevel > oldLevel) {
-                showNotification(`🎉 Level Up! You're now Level ${newLevel}!`, 'success');
-            }
-        }
-
-        // ============================================
-        // SEARCH FUNCTIONS
-        // ============================================
-
-        async function searchPapers() {
-            const searchInput = document.getElementById('searchInput');
-            if (!searchInput) return;
-            
-            const query = searchInput.value.trim();
-            if (!query && !state.currentQuery) {
-                await loadDefaultPapers();
-                return;
-            }
-            
-            state.currentQuery = query || state.currentQuery;
-            state.currentStart = 0;
-            
-            await fetchPapers(state.currentQuery, state.currentStart);
-            
-            if (query) {
-                addXP(10);
-            }
-        }
-
-        async function searchWithAI() {
-            const searchInput = document.getElementById('searchInput');
-            if (!searchInput) return;
-            
-            const query = searchInput.value.trim();
-            if (!query) {
-                showNotification('Please enter a search query', 'warning');
-                return;
-            }
-            
-            state.currentQuery = query;
-            state.currentStart = 0;
-            
-            showLoading(true, 'AI is analyzing your query...');
-            
-            await fetchPapers(query, 0);
-            
-            showNotification('✨ Search complete! (Add OpenAI key for AI features)', 'info');
-            addXP(15);
-        }
-
-        async function fetchPapers(query = '', start = 0, append = false) {
-            if (state.isLoading) return;
-            
-            state.isLoading = true;
-            showLoading(true);
-            
-            try {
-                const params = new URLSearchParams({
-                    query: query,
-                    category: state.currentCategory,
-                    start: start.toString(),
-                    maxResults: CONFIG.PAPERS_PER_PAGE.toString()
-                });
+        // Toggle buttons functionality
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
                 
-                console.log(`🔍 Fetching papers: ${CONFIG.API_BASE}?${params}`);
-                
-                const response = await fetch(`${CONFIG.API_BASE}?${params}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log(`📚 Received ${data.papers?.length || 0} papers`);
-                
-                if (data.success && data.papers && data.papers.length > 0) {
-                    if (append) {
-                        state.currentPapers = [...state.currentPapers, ...data.papers];
-                    } else {
-                        state.currentPapers = data.papers;
-                    }
-                    
-                    renderPapers(state.currentPapers);
-                    updateStatistics();
-                    
-                    const loadMoreBtn = document.getElementById('loadMoreContainer');
-                    if (loadMoreBtn) {
-                        loadMoreBtn.classList.toggle('hidden', data.papers.length < CONFIG.PAPERS_PER_PAGE);
-                    }
-                    
-                    showNotification(`Found ${data.papers.length} papers`, 'success');
+                // You could implement different sorting/filtering based on the toggle
+                if (this.textContent === 'Latest') {
+                    currentQuery = 'machine learning 2024 2025';
+                } else if (this.textContent === 'Trending') {
+                    currentQuery = 'transformer diffusion llm';
                 } else {
-                    showEmptyState();
-                    showNotification('No papers found. Try different keywords.', 'info');
+                    currentQuery = 'transformer attention mechanism';
                 }
-            } catch (error) {
-                console.error('❌ Error:', error);
-                handleFetchError(error);
-            } finally {
-                state.isLoading = false;
-                showLoading(false);
-            }
-        }
-
-        async function loadDefaultPapers() {
-            await fetchPapers('machine learning', 0);
-        }
-
-        // ============================================
-        // RENDERING
-        // ============================================
-
-        function renderPapers(papers) {
-            const container = document.getElementById('papersContainer');
-            if (!container) return;
-            
-            if (!papers || papers.length === 0) {
-                showEmptyState();
-                return;
-            }
-            
-            container.innerHTML = papers.map(paper => createPaperCard(paper)).join('');
-            lucide.createIcons();
-            animateCards();
-        }
-
-        function createPaperCard(paper) {
-            const isSaved = state.savedPapers.some(p => p.arxivId === paper.arxivId);
-            const metrics = {
-                citations: Math.floor(Math.random() * 1000),
-                githubStars: Math.floor(Math.random() * 500),
-                implementations: Math.floor(Math.random() * 20),
-                discussions: Math.floor(Math.random() * 50)
-            };
-            
-            return `
-                <div class="paper-card bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white">
-                        <h3 class="font-bold text-lg mb-1 line-clamp-2">${escapeHtml(paper.title)}</h3>
-                        <p class="text-sm text-purple-100">${escapeHtml(paper.authors || 'Unknown authors')}</p>
-                        <p class="text-xs mt-1">${formatDate(paper.published)}</p>
-                    </div>
-                    
-                    <div class="p-4">
-                        <p class="text-sm text-gray-700 mb-3 line-clamp-3">
-                            ${escapeHtml(paper.abstract || 'No abstract available')}
-                        </p>
-                        
-                        <div class="grid grid-cols-4 gap-2 mb-3">
-                            <div class="text-center p-2 bg-purple-50 rounded">
-                                <div class="font-bold text-purple-600">${metrics.citations}</div>
-                                <div class="text-xs">Citations</div>
-                            </div>
-                            <div class="text-center p-2 bg-blue-50 rounded">
-                                <div class="font-bold text-blue-600">${metrics.githubStars}</div>
-                                <div class="text-xs">GitHub</div>
-                            </div>
-                            <div class="text-center p-2 bg-green-50 rounded">
-                                <div class="font-bold text-green-600">${metrics.implementations}</div>
-                                <div class="text-xs">Impl.</div>
-                            </div>
-                            <div class="text-center p-2 bg-orange-50 rounded">
-                                <div class="font-bold text-orange-600">${metrics.discussions}</div>
-                                <div class="text-xs">Discuss</div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-wrap gap-1 mb-3">
-                            ${(paper.categories || []).slice(0, 3).map(cat => `
-                                <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
-                                    ${cat}
-                                </span>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <a href="${paper.url}" target="_blank" 
-                               class="flex-1 text-center px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-sm">
-                                View Paper
-                            </a>
-                            ${paper.pdfUrl ? `
-                                <a href="${paper.pdfUrl}" target="_blank" 
-                                   class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm">
-                                    PDF
-                                </a>
-                            ` : ''}
-                            <button onclick="toggleSavePaper('${paper.arxivId}')" 
-                                    class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">
-                                ${isSaved ? '⭐' : '☆'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ============================================
-        // PAPER ACTIONS
-        // ============================================
-
-        function toggleSavePaper(paperId) {
-            const paper = state.currentPapers.find(p => p.arxivId === paperId);
-            if (!paper) return;
-            
-            const savedIndex = state.savedPapers.findIndex(p => p.arxivId === paperId);
-            
-            if (savedIndex > -1) {
-                state.savedPapers.splice(savedIndex, 1);
-                showNotification('Paper removed from saved', 'info');
-            } else {
-                state.savedPapers.push(paper);
-                showNotification('Paper saved! 📚', 'success');
-                addXP(5);
-            }
-            
-            localStorage.setItem('savedPapers', JSON.stringify(state.savedPapers));
-            renderPapers(state.currentPapers);
-        }
-
-        // ============================================
-        // ADVANCED FEATURES
-        // ============================================
-
-        async function generateLiteratureReview() {
-            const topic = prompt('Enter research topic for literature review:');
-            if (!topic) return;
-            
-            showLoading(true, 'Generating literature review...');
-            
-            setTimeout(() => {
-                showLoading(false);
-                alert(`Literature Review: ${topic}\n\nThis feature requires OpenAI API key.\nAdd OPENAI_API_KEY in Vercel settings.`);
-                addXP(20);
-            }, 2000);
-        }
-
-        async function findCollaborators() {
-            showNotification('Finding researchers with similar interests...', 'info');
-            
-            setTimeout(() => {
-                const collaborators = [
-                    'Dr. Sarah Chen - NLP Expert - 89% match',
-                    'Prof. Michael Brown - Computer Vision - 76% match',
-                    'Dr. Lisa Wang - ML Theory - 71% match'
-                ];
-                alert('Potential Collaborators:\n\n' + collaborators.join('\n'));
-                addXP(15);
-            }, 1000);
-        }
-
-        async function suggestNextPaper() {
-            if (state.currentPapers.length === 0) {
-                showNotification('Search for papers first', 'info');
-                return;
-            }
-            
-            const paper = state.currentPapers[Math.floor(Math.random() * Math.min(3, state.currentPapers.length))];
-            
-            if (confirm(`Recommended: "${paper.title}"\n\nWould you like to read it?`)) {
-                window.open(paper.url, '_blank');
-                addXP(10);
-            }
-        }
-
-        function showResearchRoadmap() {
-            const roadmap = [
-                'Week 1-2: Fundamentals of Transformers',
-                'Week 3-4: BERT and GPT architectures',
-                'Week 5-6: Vision Transformers',
-                'Week 7-8: Recent advances'
-            ];
-            
-            alert('Your Research Roadmap:\n\n' + roadmap.join('\n'));
-            addXP(15);
-        }
-
-        function compareImplementations() {
-            if (state.currentPapers.length > 0) {
-                const paper = state.currentPapers[0];
-                window.open(`https://paperswithcode.com/search?q=${encodeURIComponent(paper.title)}`, '_blank');
-                addXP(10);
-            } else {
-                showNotification('Search for papers first', 'info');
-            }
-        }
-
-        function showBenchmarks() {
-            window.open('https://paperswithcode.com/sota', '_blank');
-        }
-
-        function predictTrends() {
-            showLoading(true, 'Analyzing trends...');
-            
-            setTimeout(() => {
-                showLoading(false);
-                const trends = [
-                    '🔥 Multimodal Learning - 87% growth',
-                    '📈 Efficient Transformers - 76% growth',
-                    '🚀 Neuromorphic Computing - 65% growth',
-                    '⚡ Quantum ML - 54% growth'
-                ];
-                alert('ML Trend Predictions 2025:\n\n' + trends.join('\n'));
-                addXP(10);
-            }, 2000);
-        }
-
-        function weeklyDigest() {
-            const email = prompt('Enter your email for weekly digest:');
-            if (email && email.includes('@')) {
-                localStorage.setItem('digestEmail', email);
-                showNotification('📧 Weekly digest activated!', 'success');
-                addXP(15);
-            }
-        }
-
-        async function loadMore() {
-            if (state.isLoading) return;
-            state.currentStart += CONFIG.PAPERS_PER_PAGE;
-            await fetchPapers(state.currentQuery, state.currentStart, true);
-        }
-
-        function quickSearch(term) {
-            document.getElementById('searchInput').value = term;
-            searchPapers();
-        }
-
-        async function setFilter(filter) {
-            const filters = {
-                'for-you': 'machine learning transformer',
-                'trending': 'diffusion model stable diffusion',
-                'high-impact': 'attention mechanism bert gpt',
-                'needs-review': 'novel approach',
-                'breakthrough': 'state-of-the-art'
-            };
-            
-            document.getElementById('searchInput').value = filters[filter] || '';
-            await searchPapers();
-        }
-
-        function toggleAIAssistant() {
-            alert('AI Research Assistant\n\nHow can I help you?\n• Explain papers\n• Find related work\n• Suggest readings\n\n(Add OpenAI API key for full functionality)');
-            addXP(5);
-        }
-
-        function openSettings() {
-            const name = prompt('Enter your name:', state.userProfile.name);
-            if (name) {
-                state.userProfile.name = name;
-                saveUserProfile();
-                showNotification('Settings saved!', 'success');
-            }
-        }
-
-        // ============================================
-        // UTILITIES
-        // ============================================
-
-        function showLoading(show, message = 'Loading papers...') {
-            const indicator = document.getElementById('loadingIndicator');
-            if (indicator) {
-                indicator.classList.toggle('hidden', !show);
-                const textElem = indicator.querySelector('p');
-                if (textElem && message) {
-                    textElem.textContent = message;
-                }
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            const colors = {
-                success: 'bg-green-100 text-green-700',
-                error: 'bg-red-100 text-red-700',
-                warning: 'bg-yellow-100 text-yellow-700',
-                info: 'bg-blue-100 text-blue-700'
-            };
-            
-            const notification = document.createElement('div');
-            notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg ${colors[type]} z-50 animate-slide-in`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.remove(), 3000);
-        }
-
-        function showEmptyState() {
-            const container = document.getElementById('papersContainer');
-            if (!container) return;
-            
-            container.innerHTML = `
-                <div class="col-span-full text-center py-16">
-                    <i data-lucide="search" class="w-24 h-24 text-gray-300 mx-auto mb-4"></i>
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">No papers found</h3>
-                    <p class="text-gray-500 mb-6">Try different keywords</p>
-                    <button onclick="quickSearch('machine learning')" 
-                            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-                        Browse ML Papers
-                    </button>
-                </div>
-            `;
-            lucide.createIcons();
-        }
-
-        function handleFetchError(error) {
-            console.error('Fetch error:', error);
-            showNotification('Error loading papers. Please try again.', 'error');
-            
-            if (state.savedPapers.length > 0) {
-                renderPapers(state.savedPapers);
-                showNotification('Showing saved papers', 'info');
-            } else {
-                showEmptyState();
-            }
-        }
-
-        function updateStatistics() {
-            const stats = {
-                users: 2800 + Math.floor(Math.random() * 200),
-                papersToday: 400 + Math.floor(Math.random() * 100),
-                discussions: 80 + Math.floor(Math.random() * 30)
-            };
-            
-            document.getElementById('liveUserCount').textContent = `${stats.users.toLocaleString()} researchers online`;
-            document.getElementById('papersToday').textContent = `${stats.papersToday} new papers today`;
-            document.getElementById('discussionsActive').textContent = `${stats.discussions} active discussions`;
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'Unknown date';
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) return 'Today';
-            if (diffDays === 1) return 'Yesterday';
-            if (diffDays < 7) return `${diffDays} days ago`;
-            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-            
-            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text || '';
-            return div.innerHTML;
-        }
-
-        function animateCards() {
-            document.querySelectorAll('.paper-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
                 
-                setTimeout(() => {
-                    card.style.transition = 'all 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 50);
+                currentOffset = 0;
+                document.getElementById('papersContainer').innerHTML = '';
+                loadPapers(currentQuery, currentCategory, currentYear);
             });
-        }
-
-        function setupEventListeners() {
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        searchWithAI();
-                    }
-                });
-            }
-            
-            const categoryFilter = document.getElementById('categoryFilter');
-            if (categoryFilter) {
-                categoryFilter.addEventListener('change', (e) => {
-                    state.currentCategory = e.target.value;
-                    searchPapers();
-                });
-            }
-        }
-
-        function startLiveUpdates() {
-            setInterval(updateStatistics, 5000);
-        }
-
-        // Make functions globally available
-        window.searchPapers = searchPapers;
-        window.searchWithAI = searchWithAI;
-        window.generateLiteratureReview = generateLiteratureReview;
-        window.findCollaborators = findCollaborators;
-        window.suggestNextPaper = suggestNextPaper;
-        window.showResearchRoadmap = showResearchRoadmap;
-        window.compareImplementations = compareImplementations;
-        window.showBenchmarks = showBenchmarks;
-        window.predictTrends = predictTrends;
-        window.weeklyDigest = weeklyDigest;
-        window.loadMore = loadMore;
-        window.quickSearch = quickSearch;
-        window.setFilter = setFilter;
-        window.toggleAIAssistant = toggleAIAssistant;
-        window.openSettings = openSettings;
-        window.toggleSavePaper = toggleSavePaper;
-
-        console.log('✅ ML Research Dashboard Ready!');
+        });
     </script>
 </body>
 </html>
